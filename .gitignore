@@ -51,7 +51,7 @@ session.session
 /images
 /dist
 
-/docs
+/backend/docs
 
 
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
