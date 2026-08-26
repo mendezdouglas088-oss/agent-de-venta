@@ -14,10 +14,13 @@ import {
   Trash2,
   AlertTriangle,
   Settings,
+  BotMessageSquare,
   Package,
   Cable,
   Plus,
+  Home,
   X,
+  Kanban,
   Calendar,
   UserPlus,
   ArrowRight,
@@ -381,11 +384,37 @@ export default function AutomationsPage() {
       <div style={{ minWidth: "1200px" }} className="flex h-full">
         <div className="flex h-full w-16 flex-col items-center justify-between border-r border-neutral-200 bg-white py-4">
           <div className="flex flex-col items-center gap-3">
-            <RailIcon icon={Zap} tone="brand" label="Automations" />
+            <RailIcon
+              icon={BotMessageSquare}
+              tone="brand"
+              label="Hola !!!"
+              //   onClick={() => router.push("/automation")}
+            />
+            <RailIcon
+              icon={Home}
+              label="Dashboard"
+              onClick={() => router.push("/")}
+            />
+            <RailIcon icon={Zap} active label="Automations" />
             <RailIcon
               icon={MessageSquare}
               label="Inbox"
-              onClick={() => router.push("/")}
+              onClick={() => router.push("/inbox")}
+            />
+            <RailIcon
+              icon={Kanban}
+              label="Pipeline"
+              onClick={() => router.push("/pipeline")}
+            />
+            <RailIcon
+              icon={Cable}
+              label="Connection"
+              onClick={() => setShowConnectionModal(true)}
+            />
+            <RailIcon
+              icon={Package}
+              label="Products"
+              onClick={() => setShowLibrary(true)}
             />
             <RailIcon icon={Users} label="Contacts" />
             <RailIcon icon={Heart} label="Favorites" />
@@ -393,8 +422,7 @@ export default function AutomationsPage() {
             <RailIcon icon={Repeat} label="History" />
             <RailIcon icon={Clock} label="Recent" />
             <RailIcon icon={ThumbsUp} label="Approved" />
-            <RailIcon icon={Package} label="Products" />
-            <RailIcon icon={Cable} label="Connection" />
+
             <RailIcon icon={Trash2} label="Trash" />
             <RailIcon icon={AlertTriangle} label="Alerts" />
           </div>
