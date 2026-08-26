@@ -22,7 +22,10 @@ import {
   Phone,
   Send as SendIcon,
 } from "lucide-react";
-import { Avatar, RailIcon } from "@/components/ui-primitives";
+import { Avatar } from "@/components/ui-primitives";
+
+import Sidebar from "@/components/Sidebar";
+import TopNav from "@/components/TopNav";
 
 const CURRENT_USER = { name: "Adib Hussain" };
 
@@ -246,80 +249,35 @@ export default function DashboardPage() {
   return (
     <div className="h-screen w-full overflow-x-auto bg-neutral-100 font-sans text-neutral-900">
       <div style={{ minWidth: "1200px" }} className="flex h-full">
-        <div className="flex h-full w-16 flex-col items-center justify-between border-r border-neutral-200 bg-white py-4">
-          <div className="flex flex-col items-center gap-3">
-            <RailIcon
-              icon={BotMessageSquare}
-              tone="brand"
-              label="Hola !!!"
-              //   onClick={() => router.push("/automation")}
-            />
-            <RailIcon icon={Home} active label="Dashboard" />
-            <RailIcon
-              icon={Zap}
-              label="Automations"
-              onClick={() => router.push("/automation")}
-            />
-            <RailIcon
-              icon={MessageSquare}
-              label="Inbox"
-              onClick={() => router.push("/inbox")}
-            />
-            <RailIcon
-              icon={Kanban}
-              label="Pipeline"
-              onClick={() => router.push("/pipeline")}
-            />
-            <RailIcon
-              icon={Cable}
-              label="Connection"
-              onClick={() => setShowConnectionModal(true)}
-            />
-            <RailIcon
-              icon={Package}
-              label="Products"
-              onClick={() => setShowLibrary(true)}
-            />
-            <RailIcon icon={Users} label="Contacts" />
-            <RailIcon icon={Heart} label="Favorites" />
-            <RailIcon icon={Star} label="Starred" />
-            <RailIcon icon={Repeat} label="History" />
-            <RailIcon icon={Clock} label="Recent" />
-            <RailIcon icon={ThumbsUp} label="Approved" />
-
-            <RailIcon icon={Trash2} label="Trash" />
-            <RailIcon icon={AlertTriangle} label="Alerts" />
-          </div>
-          <div className="flex flex-col items-center gap-3">
-            <RailIcon icon={Settings} label="Settings" />
-            <Avatar name={CURRENT_USER.name} size="h-9 w-9" />
-          </div>
-        </div>
-
-        <div className="flex-1 overflow-y-auto p-8">
-          <div className="mb-6">
-            <h1 className="text-lg font-semibold text-neutral-900">
-              Dashboard
-            </h1>
-            <p className="mt-1 text-sm text-neutral-400">
-              A quick overview of your conversations, pipeline, and automations.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-4 gap-4">
-            {METRICS.map((m) => (
-              <MetricCard key={m.label} metric={m} />
-            ))}
-          </div>
-
-          <div className="mt-4 grid grid-cols-2 gap-4">
-            <div className="space-y-4">
-              <PipelineOverviewCard />
-              <ChannelMessagesCard />
+        <Sidebar />
+        <div className="flex flex-1 flex-col overflow-hidden">
+          <TopNav />
+          <div className="flex-1 overflow-y-auto p-8">
+            <div className="mb-6">
+              <h1 className="text-lg font-semibold text-neutral-900">
+                Dashboard
+              </h1>
+              <p className="mt-1 text-sm text-neutral-400">
+                A quick overview of your conversations, pipeline, and
+                automations.
+              </p>
             </div>
-            <div className="space-y-4">
-              <RecentActivityCard router={router} />
-              <ActiveAutomationsCard router={router} />
+
+            <div className="grid grid-cols-4 gap-4">
+              {METRICS.map((m) => (
+                <MetricCard key={m.label} metric={m} />
+              ))}
+            </div>
+
+            <div className="mt-4 grid grid-cols-2 gap-4">
+              <div className="space-y-4">
+                <PipelineOverviewCard />
+                <ChannelMessagesCard />
+              </div>
+              <div className="space-y-4">
+                <RecentActivityCard router={router} />
+                <ActiveAutomationsCard router={router} />
+              </div>
             </div>
           </div>
         </div>
