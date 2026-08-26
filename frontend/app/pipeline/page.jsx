@@ -12,6 +12,7 @@ import {
   Clock,
   ThumbsUp,
   Trash2,
+  CalendarDays,
   AlertTriangle,
   BotMessageSquare,
   Settings,
@@ -334,6 +335,11 @@ export default function PipelinePage() {
               icon={Package}
               label="Products"
               onClick={() => setShowLibrary(true)}
+            />
+            <RailIcon
+              icon={CalendarDays}
+              label="Calendar"
+              onClick={() => router.push("/calendar")}
             />
             <RailIcon icon={Users} label="Contacts" />
             <RailIcon icon={Heart} label="Favorites" />

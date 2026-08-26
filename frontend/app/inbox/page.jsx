@@ -9,6 +9,7 @@ import {
   Star,
   Repeat,
   Clock,
+  CalendarDays,
   BotMessageSquare,
   ThumbsUp,
   Trash2,
@@ -936,6 +937,11 @@ export default function CRMInboxDashboard() {
               icon={Package}
               label="Products"
               onClick={() => setShowLibrary(true)}
+            />
+            <RailIcon
+              icon={CalendarDays}
+              label="Calendar"
+              onClick={() => router.push("/calendar")}
             />
             <RailIcon icon={Users} label="Contacts" />
             <RailIcon icon={Heart} label="Favorites" />
