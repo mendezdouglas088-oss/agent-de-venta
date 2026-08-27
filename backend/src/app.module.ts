@@ -5,7 +5,6 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { TelegramModule } from './telegram/telegram.module';
 import { OllamaModule } from './ollama/ollama.module';
 import { ProductsModule } from './products/products.module';
-import { TelegramBotModule } from './telegram-bot/telegram-bot.module';
 import { ImagesModule } from './images/images.module';
 import { TelegramGroupModule } from './telegram-group/telegram-group.module';
 import { ConfigModule } from './config/config.module';
@@ -25,7 +24,6 @@ import { UsersModule } from './users/users.module';
     TelegramModule,
     OllamaModule,
     ProductsModule,
-    TelegramBotModule,
     ImagesModule,
     TelegramGroupModule,
     WhatsappModule,
