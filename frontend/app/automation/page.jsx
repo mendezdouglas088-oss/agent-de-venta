@@ -27,6 +27,8 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { Avatar, RailIcon } from "@/components/ui-primitives";
+import Sidebar from "@/components/Sidebar";
+import TopNav from "@/components/TopNav";
 
 const CURRENT_USER = { name: "Adib Hussain" };
 
@@ -383,91 +385,41 @@ export default function AutomationsPage() {
   return (
     <div className="h-screen w-full overflow-x-auto bg-neutral-100 font-sans text-neutral-900">
       <div style={{ minWidth: "1200px" }} className="flex h-full">
-        <div className="flex h-full w-16 flex-col items-center justify-between border-r border-neutral-200 bg-white py-4">
-          <div className="flex flex-col items-center gap-3">
-            <RailIcon
-              icon={BotMessageSquare}
-              tone="brand"
-              label="Hola !!!"
-              //   onClick={() => router.push("/automation")}
-            />
-            <RailIcon
-              icon={Home}
-              label="Dashboard"
-              onClick={() => router.push("/")}
-            />
-            <RailIcon icon={Zap} active label="Automations" />
-            <RailIcon
-              icon={MessageSquare}
-              label="Inbox"
-              onClick={() => router.push("/inbox")}
-            />
-            <RailIcon
-              icon={Kanban}
-              label="Pipeline"
-              onClick={() => router.push("/pipeline")}
-            />
-            <RailIcon
-              icon={Cable}
-              label="Connection"
-              onClick={() => setShowConnectionModal(true)}
-            />
-            <RailIcon
-              icon={Package}
-              label="Products"
-              onClick={() => setShowLibrary(true)}
-            />
-            <RailIcon
-              icon={CalendarDays}
-              label="Calendar"
-              onClick={() => router.push("/calendar")}
-            />
-            <RailIcon icon={Users} label="Contacts" />
-            <RailIcon icon={Heart} label="Favorites" />
-            <RailIcon icon={Star} label="Starred" />
-            <RailIcon icon={Repeat} label="History" />
-            <RailIcon icon={Clock} label="Recent" />
-            <RailIcon icon={ThumbsUp} label="Approved" />
+        <Sidebar />
+        <div className="flex flex-1 flex-col overflow-hidden">
+          <TopNav />
 
-            <RailIcon icon={Trash2} label="Trash" />
-            <RailIcon icon={AlertTriangle} label="Alerts" />
-          </div>
-          <div className="flex flex-col items-center gap-3">
-            <RailIcon icon={Settings} label="Settings" />
-            <Avatar name={CURRENT_USER.name} size="h-9 w-9" />
-          </div>
-        </div>
-
-        <div className="flex-1 overflow-y-auto p-8">
-          <div className="mb-6 flex items-center justify-between">
-            <div>
-              <h1 className="text-lg font-semibold text-neutral-900">
-                Automations
-              </h1>
-              <p className="mt-1 text-sm text-neutral-400">
-                Manage what happens automatically in your connected groups and
-                contacts.
-              </p>
+          <div className="flex-1 overflow-y-auto p-8">
+            <div className="mb-6 flex items-center justify-between">
+              <div>
+                <h1 className="text-lg font-semibold text-neutral-900">
+                  Automations
+                </h1>
+                <p className="mt-1 text-sm text-neutral-400">
+                  Manage what happens automatically in your connected groups and
+                  contacts.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowModal(true)}
+                className="flex items-center gap-1.5 rounded-xl bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800"
+              >
+                <Plus className="h-4 w-4" />
+                New automation
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => setShowModal(true)}
-              className="flex items-center gap-1.5 rounded-xl bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800"
-            >
-              <Plus className="h-4 w-4" />
-              New automation
-            </button>
-          </div>
 
-          <div className="grid grid-cols-2 gap-4 xl:grid-cols-3">
-            {automations.map((a) => (
-              <AutomationCard
-                key={a.id}
-                automation={a}
-                onEdit={() => setEditingAutomation(a)}
-                onDelete={() => setDeletingAutomation(a)}
-              />
-            ))}
+            <div className="grid grid-cols-2 gap-4 xl:grid-cols-3">
+              {automations.map((a) => (
+                <AutomationCard
+                  key={a.id}
+                  automation={a}
+                  onEdit={() => setEditingAutomation(a)}
+                  onDelete={() => setDeletingAutomation(a)}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </div>

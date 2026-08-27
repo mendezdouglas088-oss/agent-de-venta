@@ -30,6 +30,8 @@ import {
   Link2,
 } from "lucide-react";
 import { Avatar, RailIcon } from "@/components/ui-primitives";
+import Sidebar from "@/components/Sidebar";
+import TopNav from "@/components/TopNav";
 
 const CURRENT_USER = { name: "Adib Hussain" };
 const TODAY_KEY = "2026-08-26";
@@ -721,197 +723,164 @@ export default function CalendarPage() {
   return (
     <div className="h-screen w-full overflow-x-auto bg-neutral-100 font-sans text-neutral-900">
       <div style={{ minWidth: "1300px" }} className="flex h-full">
-        <div className="flex h-full w-16 flex-col items-center justify-between border-r border-neutral-200 bg-white py-4">
-          <div className="flex flex-col items-center gap-3">
-            <RailIcon
-              icon={Home}
-              label="Dashboard"
-              onClick={() => router.push("/")}
-            />
-            <RailIcon
-              icon={Zap}
-              tone="brand"
-              label="Automations"
-              onClick={() => router.push("/automatization")}
-            />
-            <RailIcon
-              icon={MessageSquare}
-              label="Inbox"
-              onClick={() => router.push("/inbox")}
-            />
-            <RailIcon
-              icon={Kanban}
-              label="Pipeline"
-              onClick={() => router.push("/pipeline")}
-            />
-            <RailIcon icon={CalendarDays} active label="Calendar" />
-            <RailIcon icon={Users} label="Contacts" />
-            <RailIcon icon={Heart} label="Favorites" />
-            <RailIcon icon={Star} label="Starred" />
-            <RailIcon icon={Repeat} label="History" />
-            <RailIcon icon={Clock} label="Recent" />
-            <RailIcon icon={ThumbsUp} label="Approved" />
-            <RailIcon icon={Package} label="Products" />
-            <RailIcon icon={Cable} label="Connection" />
-            <RailIcon icon={Trash2} label="Trash" />
-            <RailIcon icon={AlertTriangle} label="Alerts" />
-          </div>
-          <div className="flex flex-col items-center gap-3">
-            <RailIcon icon={Settings} label="Settings" />
-            <Avatar name={CURRENT_USER.name} size="h-9 w-9" />
-          </div>
-        </div>
+        <Sidebar />
+        <div className="flex flex-1 flex-col overflow-hidden">
+          <TopNav />
+          <div className="flex flex-1 overflow-hidden">
+            <div className="flex h-full w-64 shrink-0 flex-col overflow-y-auto border-r border-neutral-200 bg-white p-4">
+              <div className="mb-5 flex items-center gap-2">
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-neutral-900 text-white">
+                  <CalendarDays className="h-4 w-4" />
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-neutral-900">
+                    CRM Calendar
+                  </p>
+                  <p className="text-xs text-neutral-400">
+                    Appointments workspace
+                  </p>
+                </div>
+              </div>
 
-        <div className="flex h-full w-64 shrink-0 flex-col overflow-y-auto border-r border-neutral-200 bg-white p-4">
-          <div className="mb-5 flex items-center gap-2">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-neutral-900 text-white">
-              <CalendarDays className="h-4 w-4" />
-            </span>
-            <div>
-              <p className="text-sm font-semibold text-neutral-900">
-                CRM Calendar
+              <MiniCalendar
+                month={miniMonth}
+                year={miniYear}
+                onPrev={() => {
+                  if (miniMonth === 0) {
+                    setMiniMonth(11);
+                    setMiniYear((y) => y - 1);
+                  } else {
+                    setMiniMonth((m) => m - 1);
+                  }
+                }}
+                onNext={() => {
+                  if (miniMonth === 11) {
+                    setMiniMonth(0);
+                    setMiniYear((y) => y + 1);
+                  } else {
+                    setMiniMonth((m) => m + 1);
+                  }
+                }}
+                selectedDate={selectedKey}
+                onSelectDate={(d) => setAnchorDate(d)}
+                eventDates={eventDates}
+              />
+
+              <p className="mb-2 mt-6 text-xs font-semibold uppercase tracking-wide text-neutral-300">
+                My Calendars
               </p>
-              <p className="text-xs text-neutral-400">Appointments workspace</p>
-            </div>
-          </div>
-
-          <MiniCalendar
-            month={miniMonth}
-            year={miniYear}
-            onPrev={() => {
-              if (miniMonth === 0) {
-                setMiniMonth(11);
-                setMiniYear((y) => y - 1);
-              } else {
-                setMiniMonth((m) => m - 1);
-              }
-            }}
-            onNext={() => {
-              if (miniMonth === 11) {
-                setMiniMonth(0);
-                setMiniYear((y) => y + 1);
-              } else {
-                setMiniMonth((m) => m + 1);
-              }
-            }}
-            selectedDate={selectedKey}
-            onSelectDate={(d) => setAnchorDate(d)}
-            eventDates={eventDates}
-          />
-
-          <p className="mb-2 mt-6 text-xs font-semibold uppercase tracking-wide text-neutral-300">
-            My Calendars
-          </p>
-          <div className="space-y-1.5">
-            {CALENDAR_FILTERS.map((f) => (
-              <label
-                key={f.key}
-                className="flex items-center gap-2.5 rounded-lg px-1 py-1 text-sm text-neutral-600 hover:bg-neutral-50"
-              >
-                <input
-                  type="checkbox"
-                  checked={activeFilters.includes(f.key)}
-                  onChange={() => toggleFilter(f.key)}
-                  className="h-3.5 w-3.5 rounded accent-neutral-900"
-                />
-                <span className={`h-2 w-2 rounded-full ${f.dot}`} />
-                {f.label}
-              </label>
-            ))}
-          </div>
-
-          <p className="mb-2 mt-6 text-xs font-semibold uppercase tracking-wide text-neutral-300">
-            Categories
-          </p>
-          <div className="space-y-1.5">
-            {CATEGORIES.map((c) => (
-              <div
-                key={c.label}
-                className="flex items-center gap-2.5 px-1 py-1 text-sm text-neutral-600"
-              >
-                <span className={`h-2 w-2 rounded-full ${c.dot}`} />
-                {c.label}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="flex-1 overflow-y-auto p-6">
-          <div className="mb-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <h1 className="text-lg font-semibold text-neutral-900">
-                {rangeLabel}
-              </h1>
-              <button
-                type="button"
-                onClick={goToday}
-                className="rounded-lg border border-neutral-200 px-3 py-1 text-xs font-medium text-neutral-600 hover:bg-neutral-50"
-              >
-                Today
-              </button>
-              <div className="flex items-center gap-1">
-                <button
-                  type="button"
-                  onClick={goPrev}
-                  className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={goNext}
-                  className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <Search className="h-4 w-4 text-neutral-400" />
-              <HelpCircle className="h-4 w-4 text-neutral-400" />
-              <Settings className="h-4 w-4 text-neutral-400" />
-              <div className="flex items-center rounded-xl bg-neutral-100 p-1">
-                {["day", "week", "month"].map((mode) => (
-                  <button
-                    key={mode}
-                    type="button"
-                    onClick={() => setViewMode(mode)}
-                    className={`rounded-lg px-3 py-1.5 text-xs font-medium capitalize ${viewMode === mode ? "bg-white text-neutral-900 shadow-sm" : "text-neutral-500"}`}
+              <div className="space-y-1.5">
+                {CALENDAR_FILTERS.map((f) => (
+                  <label
+                    key={f.key}
+                    className="flex items-center gap-2.5 rounded-lg px-1 py-1 text-sm text-neutral-600 hover:bg-neutral-50"
                   >
-                    {mode}
-                  </button>
+                    <input
+                      type="checkbox"
+                      checked={activeFilters.includes(f.key)}
+                      onChange={() => toggleFilter(f.key)}
+                      className="h-3.5 w-3.5 rounded accent-neutral-900"
+                    />
+                    <span className={`h-2 w-2 rounded-full ${f.dot}`} />
+                    {f.label}
+                  </label>
                 ))}
               </div>
-              <button
-                type="button"
-                onClick={() => openNewAt(selectedKey, 9)}
-                className="flex items-center gap-1.5 rounded-xl bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800"
-              >
-                <Plus className="h-4 w-4" />
-                New
-              </button>
+
+              <p className="mb-2 mt-6 text-xs font-semibold uppercase tracking-wide text-neutral-300">
+                Categories
+              </p>
+              <div className="space-y-1.5">
+                {CATEGORIES.map((c) => (
+                  <div
+                    key={c.label}
+                    className="flex items-center gap-2.5 px-1 py-1 text-sm text-neutral-600"
+                  >
+                    <span className={`h-2 w-2 rounded-full ${c.dot}`} />
+                    {c.label}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="mb-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <h1 className="text-lg font-semibold text-neutral-900">
+                    {rangeLabel}
+                  </h1>
+                  <button
+                    type="button"
+                    onClick={goToday}
+                    className="rounded-lg border border-neutral-200 px-3 py-1 text-xs font-medium text-neutral-600 hover:bg-neutral-50"
+                  >
+                    Today
+                  </button>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={goPrev}
+                      className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={goNext}
+                      className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <Search className="h-4 w-4 text-neutral-400" />
+                  <HelpCircle className="h-4 w-4 text-neutral-400" />
+                  <Settings className="h-4 w-4 text-neutral-400" />
+                  <div className="flex items-center rounded-xl bg-neutral-100 p-1">
+                    {["day", "week", "month"].map((mode) => (
+                      <button
+                        key={mode}
+                        type="button"
+                        onClick={() => setViewMode(mode)}
+                        className={`rounded-lg px-3 py-1.5 text-xs font-medium capitalize ${viewMode === mode ? "bg-white text-neutral-900 shadow-sm" : "text-neutral-500"}`}
+                      >
+                        {mode}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => openNewAt(selectedKey, 9)}
+                    className="flex items-center gap-1.5 rounded-xl bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800"
+                  >
+                    <Plus className="h-4 w-4" />
+                    New
+                  </button>
+                </div>
+              </div>
+
+              {viewMode === "month" ? (
+                <MonthGrid
+                  year={anchorDate.getFullYear()}
+                  month={anchorDate.getMonth()}
+                  events={visibleEvents}
+                  onDayClick={(d) => {
+                    setAnchorDate(d);
+                    setViewMode("day");
+                  }}
+                />
+              ) : (
+                <TimeGrid
+                  days={days}
+                  events={visibleEvents}
+                  onSlotClick={openNewAt}
+                  onEventClick={openEdit}
+                />
+              )}
             </div>
           </div>
-
-          {viewMode === "month" ? (
-            <MonthGrid
-              year={anchorDate.getFullYear()}
-              month={anchorDate.getMonth()}
-              events={visibleEvents}
-              onDayClick={(d) => {
-                setAnchorDate(d);
-                setViewMode("day");
-              }}
-            />
-          ) : (
-            <TimeGrid
-              days={days}
-              events={visibleEvents}
-              onSlotClick={openNewAt}
-              onEventClick={openEdit}
-            />
-          )}
         </div>
       </div>
 

@@ -26,6 +26,8 @@ import {
   Send as SendIcon,
 } from "lucide-react";
 import { Avatar, RailIcon } from "@/components/ui-primitives";
+import Sidebar from "@/components/Sidebar";
+import TopNav from "@/components/TopNav";
 
 const CURRENT_USER = { name: "Adib Hussain" };
 
@@ -302,119 +304,68 @@ export default function PipelinePage() {
   return (
     <div className="h-screen w-full overflow-x-auto bg-neutral-100 font-sans text-neutral-900">
       <div style={{ minWidth: "1200px" }} className="flex h-full">
-        <div className="flex h-full w-16 flex-col items-center justify-between border-r border-neutral-200 bg-white py-4">
-          <div className="flex flex-col items-center gap-3">
-            <RailIcon
-              icon={BotMessageSquare}
-              tone="brand"
-              label="Hola !!!"
-              //   onClick={() => router.push("/automation")}
-            />
-            <RailIcon
-              icon={Home}
-              label="Dashboard"
-              onClick={() => router.push("/")}
-            />
-            <RailIcon
-              icon={Zap}
-              label="Automations"
-              onClick={() => router.push("/automation")}
-            />
-            <RailIcon
-              icon={MessageSquare}
-              label="Inbox"
-              onClick={() => router.push("/inbox")}
-            />
-            <RailIcon icon={Kanban} active label="Pipeline" />
-            <RailIcon
-              icon={Cable}
-              label="Connection"
-              onClick={() => setShowConnectionModal(true)}
-            />
-            <RailIcon
-              icon={Package}
-              label="Products"
-              onClick={() => setShowLibrary(true)}
-            />
-            <RailIcon
-              icon={CalendarDays}
-              label="Calendar"
-              onClick={() => router.push("/calendar")}
-            />
-            <RailIcon icon={Users} label="Contacts" />
-            <RailIcon icon={Heart} label="Favorites" />
-            <RailIcon icon={Star} label="Starred" />
-            <RailIcon icon={Repeat} label="History" />
-            <RailIcon icon={Clock} label="Recent" />
-            <RailIcon icon={ThumbsUp} label="Approved" />
-
-            <RailIcon icon={Trash2} label="Trash" />
-            <RailIcon icon={AlertTriangle} label="Alerts" />
-          </div>
-          <div className="flex flex-col items-center gap-3">
-            <RailIcon icon={Settings} label="Settings" />
-            <Avatar name={CURRENT_USER.name} size="h-9 w-9" />
-          </div>
-        </div>
-
-        <div className="flex-1 overflow-x-auto overflow-y-hidden p-8">
-          <div className="mb-6 flex items-center justify-between">
-            <div>
-              <h1 className="text-lg font-semibold text-neutral-900">
-                Pipeline
-              </h1>
-              <p className="mt-1 text-sm text-neutral-400">
-                Drag leads across stages as deals move forward.
-              </p>
+        <Sidebar />
+        <div className="flex flex-1 flex-col overflow-hidden">
+          <TopNav />
+          <div className="flex-1 overflow-x-auto overflow-y-hidden p-8">
+            <div className="mb-6 flex items-center justify-between">
+              <div>
+                <h1 className="text-lg font-semibold text-neutral-900">
+                  Pipeline
+                </h1>
+                <p className="mt-1 text-sm text-neutral-400">
+                  Drag leads across stages as deals move forward.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowModal(true)}
+                className="flex items-center gap-1.5 rounded-xl bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800"
+              >
+                <Plus className="h-4 w-4" />
+                New lead
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => setShowModal(true)}
-              className="flex items-center gap-1.5 rounded-xl bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800"
-            >
-              <Plus className="h-4 w-4" />
-              New lead
-            </button>
-          </div>
 
-          <div className="flex h-full gap-4 pb-4">
-            {STAGES.map((stage) => {
-              const stageLeads = leads.filter((l) => l.stage === stage.key);
-              return (
-                <div
-                  key={stage.key}
-                  onDragOver={(e) => {
-                    e.preventDefault();
-                    setDragOverStage(stage.key);
-                  }}
-                  onDragLeave={() => setDragOverStage(null)}
-                  onDrop={(e) => handleDrop(e, stage.key)}
-                  className={`flex w-64 shrink-0 flex-col rounded-2xl border p-3 ${
-                    dragOverStage === stage.key
-                      ? "border-emerald-400 bg-emerald-50"
-                      : "border-neutral-200 bg-neutral-100"
-                  }`}
-                >
-                  <div className="mb-3 flex items-center justify-between px-1">
-                    <span className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-                      {stage.label}
-                    </span>
-                    <span className="text-xs text-neutral-400">
-                      {stageLeads.length}
-                    </span>
+            <div className="flex h-full gap-4 pb-4">
+              {STAGES.map((stage) => {
+                const stageLeads = leads.filter((l) => l.stage === stage.key);
+                return (
+                  <div
+                    key={stage.key}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setDragOverStage(stage.key);
+                    }}
+                    onDragLeave={() => setDragOverStage(null)}
+                    onDrop={(e) => handleDrop(e, stage.key)}
+                    className={`flex w-64 shrink-0 flex-col rounded-2xl border p-3 ${
+                      dragOverStage === stage.key
+                        ? "border-emerald-400 bg-emerald-50"
+                        : "border-neutral-200 bg-neutral-100"
+                    }`}
+                  >
+                    <div className="mb-3 flex items-center justify-between px-1">
+                      <span className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                        {stage.label}
+                      </span>
+                      <span className="text-xs text-neutral-400">
+                        {stageLeads.length}
+                      </span>
+                    </div>
+                    <div className="flex-1 space-y-2 overflow-y-auto">
+                      {stageLeads.map((lead) => (
+                        <LeadCard
+                          key={lead.id}
+                          lead={lead}
+                          onDragStart={handleDragStart}
+                        />
+                      ))}
+                    </div>
                   </div>
-                  <div className="flex-1 space-y-2 overflow-y-auto">
-                    {stageLeads.map((lead) => (
-                      <LeadCard
-                        key={lead.id}
-                        lead={lead}
-                        onDragStart={handleDragStart}
-                      />
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
