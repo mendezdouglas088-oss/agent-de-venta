@@ -11,6 +11,7 @@ import {
   Repeat,
   Clock,
   ThumbsUp,
+  CalendarDays,
   Trash2,
   AlertTriangle,
   Settings,
@@ -415,6 +416,11 @@ export default function AutomationsPage() {
               icon={Package}
               label="Products"
               onClick={() => setShowLibrary(true)}
+            />
+            <RailIcon
+              icon={CalendarDays}
+              label="Calendar"
+              onClick={() => router.push("/calendar")}
             />
             <RailIcon icon={Users} label="Contacts" />
             <RailIcon icon={Heart} label="Favorites" />
