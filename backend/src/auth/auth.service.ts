@@ -27,6 +27,8 @@ export class AuthService {
       email: dto.email,
       password: hashedPassword,
       firstName: dto.firstName,
+      phoneNumber: dto.phoneNumber,
+      username: dto.username,
     });
 
     await this.plansService.assignFreePlan(user); // mismo comportamiento que el /start del bot viejo
