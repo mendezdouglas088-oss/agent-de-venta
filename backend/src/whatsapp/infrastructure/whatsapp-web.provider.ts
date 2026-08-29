@@ -48,23 +48,43 @@ export class WhatsappWebProvider
   // ── contrato público ────────────────────────────────────────
   async connect(sessionId: string): Promise<void> {
     let session = this.sessions.get(sessionId);
-    if (session?.status === 'connected') return;
+    if (
+      session &&
+      ['connecting', 'waiting_qr', 'connected'].includes(session.status)
+    )
+      return; // ← ya en curso, ignora
     if (!session) session = this.createSession(sessionId);
 
-    if (['disconnected', 'error', 'auth_failed'].includes(session.status)) {
-      try {
-        await session.client?.destroy();
-      } catch {
-        /* noop */
-      }
-      await this.initClientForUser(sessionId);
+    session.status = 'connecting'; // ← se marca YA, antes de cualquier await
+    try {
+      await session.client?.destroy();
+    } catch {
+      /* noop */
     }
+    await this.initClientForUser(sessionId);
   }
 
   async getQr(sessionId: string): Promise<Buffer | null> {
     const session = this.sessions.get(sessionId);
     if (session?.status !== 'waiting_qr' || !session.lastQrString) return null;
     return QRCode.toBuffer(session.lastQrString, { type: 'png', scale: 8 });
+  }
+
+  async logout(sessionId: string): Promise<void> {
+    const session = this.sessions.get(sessionId);
+    if (session?.client) {
+      try {
+        await session.client.logout();
+      } catch {
+        /* noop */
+      }
+      try {
+        await session.client.destroy();
+      } catch {
+        /* noop */
+      }
+    }
+    this.sessions.delete(sessionId);
   }
 
   getStatus(sessionId: string): WhatsappConnectionStatus {

@@ -1,5 +1,6 @@
 export type WhatsappConnectionStatus =
   | 'disconnected'
+  | 'connecting'
   | 'waiting_qr'
   | 'connected'
   | 'auth_failed'
@@ -40,6 +41,7 @@ export interface WhatsappProvider {
   ): Promise<SendResultInterface>;
   getAllConnectedSessionIds(): string[];
   getContact(sessionId: string, chatId: string): Promise<WhatsappContact>;
+  logout(sessionId: string): Promise<void>;
 }
 
 export const WHATSAPP_PROVIDER = Symbol('WHATSAPP_PROVIDER');
