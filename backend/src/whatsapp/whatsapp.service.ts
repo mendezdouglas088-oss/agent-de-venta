@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { WhatsappGroup } from 'src/database/entities/whatsapp-group.entity';
 import { Repository } from 'typeorm';
 import { UsersService } from 'src/users/users.service';
+import { WhatsappGroupInterface } from './domain/whatsapp-provider.interface';
 
 @Injectable()
 export class WhatsappService {
@@ -17,27 +18,13 @@ export class WhatsappService {
    * @param listGroups Lista de grupos obtenidos de whatsapp-web.js
    * @param telegramId telegramId del usuario dueño (se convierte a UUID internamente)
    */
-  async create(
-    listGroups:
-      | { id: string; name: string }[]
-      | { error: string; status: string },
-    telegramId?: string,
-  ) {
-    if ('error' in listGroups) throw new Error((listGroups as any).error);
-
-    // Resolver telegramId → UUID interno del usuario
-    let userUuid: string | null = null;
-    if (telegramId) {
-      const user = await this.usersService.findByTelegramId(telegramId);
-      userUuid = user?.id ?? null;
-    }
-
-    for (const group of listGroups as { id: string; name: string }[]) {
+  async create(groups: WhatsappGroupInterface[], userId?: string | null) {
+    for (const group of groups) {
       await this.repo.upsert(
         {
-          whatsappGroupId: group.id,
-          title: group.name,
-          userId: userUuid,
+          whatsappGroupId: group.whatsappGroupId,
+          title: group.title,
+          userId: userId ?? null,
         },
         {
           conflictPaths: ['whatsappGroupId'],

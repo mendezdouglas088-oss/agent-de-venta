@@ -13,14 +13,19 @@ import { databaseConfig } from './config/database.config';
 import { WhatsappModule } from './whatsapp/whatsapp.module';
 import { PublicationModule } from './publication/publication.module';
 import { UsersModule } from './users/users.module';
+import { RealtimeModule } from './realtime/realtime.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
     NestConfigModule.forRoot({ isGlobal: true }),
+    EventEmitterModule.forRoot(),
     ScheduleModule.forRoot(),
     databaseConfig,
     ConfigModule,
     AIModule,
+    AuthModule,
     TelegramModule,
     OllamaModule,
     ProductsModule,
@@ -29,6 +34,7 @@ import { UsersModule } from './users/users.module';
     WhatsappModule,
     PublicationModule,
     UsersModule,
+    RealtimeModule,
   ],
 })
 export class AppModule {}

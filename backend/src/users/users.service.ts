@@ -40,6 +40,19 @@ export class UsersService {
     }
   }
 
+  async createAccount(data: {
+    email: string;
+    password: string;
+    firstName?: string;
+  }): Promise<User> {
+    const user = this.usersRepository.create({
+      email: data.email,
+      password: data.password, // ya viene hasheado desde AuthService
+      firstName: data.firstName ?? null,
+    });
+    return this.usersRepository.save(user);
+  }
+
   async findAll(): Promise<User[]> {
     return await this.usersRepository.find({
       relations: ['products', 'userPlan', 'userPlan.plan'],
@@ -57,6 +70,13 @@ export class UsersService {
     return await this.usersRepository.findOne({
       where: { telegramId },
       relations: ['userPlan', 'userPlan.plan'],
+    });
+  }
+
+  async findByEmail(email: string): Promise<User | null> {
+    return this.usersRepository.findOne({
+      where: { email },
+      select: ['id', 'email', 'password', 'firstName', 'isActive', 'hasPlan'], // password incluido a propósito, solo aquí
     });
   }
 

@@ -29,7 +29,7 @@ const NAV_ITEMS = [
   { icon: CalendarDays, label: "Calendar", path: "/calendar" },
 ];
 
-export default function Sidebar({ onOpenConnection, onOpenProducts }) {
+export default function Sidebar({ onOpenProducts }) {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -46,7 +46,6 @@ export default function Sidebar({ onOpenConnection, onOpenProducts }) {
             onClick={() => router.push(item.path)}
           />
         ))}
-        <RailIcon icon={Cable} label="Connection" onClick={onOpenConnection} />
         <RailIcon icon={Package} label="Products" onClick={onOpenProducts} />
         {/* <RailIcon icon={Users} label="Contacts" />
         <RailIcon icon={Heart} label="Favorites" />

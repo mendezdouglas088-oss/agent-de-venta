@@ -1,54 +1,75 @@
-import { Controller, Get, Post, Body, Query } from '@nestjs/common';
-import { WhatsappConnectService } from './whatsapp-connect.service';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Query,
+  Inject,
+  NotFoundException,
+  Res,
+} from '@nestjs/common';
 import { WhatsappService } from './whatsapp.service';
+import {
+  WHATSAPP_PROVIDER,
+  WhatsappProvider,
+} from './domain/whatsapp-provider.interface';
+import { Response } from 'express';
 
-/**
- * Controller HTTP para WhatsApp.
- * Todos los endpoints requieren telegramId para identificar la sesión del usuario.
- */
 @Controller('whatsapp')
 export class WhatsappController {
   constructor(
-    private readonly whatsappConnectService: WhatsappConnectService,
+    @Inject(WHATSAPP_PROVIDER) private readonly provider: WhatsappProvider,
     private readonly whatsappService: WhatsappService,
   ) {}
 
-  // GET /whatsapp/status?telegramId=xxx
+  @Post('connect')
+  async connect(@Query('telegramId') telegramId: string) {
+    await this.provider.connect(telegramId);
+    return { status: this.provider.getStatus(telegramId) };
+  }
+
+  @Get('qr')
+  async getQr(@Query('telegramId') telegramId: string, @Res() res: Response) {
+    const qr = await this.provider.getQr(telegramId);
+    if (!qr) throw new NotFoundException('No hay QR disponible todavía');
+    res.type('image/png').send(qr);
+  }
+
+  @Post('logout')
+  async logout(@Query('telegramId') telegramId: string) {
+    await this.provider.logout(telegramId);
+    return { status: 'disconnected' };
+  }
+
   @Get('status')
   getStatus(@Query('telegramId') telegramId: string) {
-    const status = this.whatsappConnectService.getStatus(telegramId ?? '');
+    const status = this.provider.getStatus(telegramId ?? '');
     return { status };
   }
 
-  // GET /whatsapp/update-groups?telegramId=xxx
   @Get('update-groups')
   async updateGroups(@Query('telegramId') telegramId: string) {
-    const groups = await this.whatsappConnectService.getGroups(
-      telegramId ?? '',
-    );
+    const groups = await this.provider.getGroups(telegramId ?? '');
     await this.whatsappService.create(groups, telegramId);
     return groups;
   }
 
-  // GET /whatsapp/groups
   @Get('groups')
   async getGroups(@Query('telegramId') telegramId?: string) {
     return await this.whatsappService.findAll(telegramId);
   }
 
-  // POST /whatsapp/send  { telegramId, groupId, message }
   @Post('send')
   async sendMessage(
     @Body() body: { telegramId: string; groupId: string; message: string },
   ) {
-    return await this.whatsappConnectService.sendMessageToGroup(
+    return await this.provider.sendText(
       body.telegramId,
       body.groupId,
       body.message,
     );
   }
 
-  // POST /whatsapp/send-image  { telegramId, groupId, imageUrls, caption? }
   @Post('send-image')
   async sendImage(
     @Body()
@@ -59,7 +80,7 @@ export class WhatsappController {
       caption?: string;
     },
   ) {
-    return await this.whatsappConnectService.sendImageToGroup(
+    return await this.provider.sendImages(
       body.telegramId,
       body.groupId,
       body.imageUrls,

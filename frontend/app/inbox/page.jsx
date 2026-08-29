@@ -53,6 +53,7 @@ import {
   Kanban,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { WhatsappConnectBox } from "@/components/WhatsappConnectBox";
 
 import Sidebar from "@/components/Sidebar";
 import TopNav from "@/components/TopNav";
@@ -780,7 +781,7 @@ function WhatsAppQRModal({ onClose }) {
           </button>
         </div>
         <div className="mx-auto flex h-48 w-48 items-center justify-center rounded-xl border border-neutral-200 bg-neutral-50">
-          <QrCode className="h-24 w-24 text-neutral-800" strokeWidth={1} />
+          <WhatsappConnectBox telegramId="763917154" />
         </div>
         <p className="mt-4 text-sm text-neutral-500">
           Open WhatsApp on your phone and scan this code to link your account.
@@ -907,10 +908,7 @@ export default function CRMInboxDashboard() {
     <div className="h-screen w-full overflow-x-auto bg-neutral-100 font-sans text-neutral-900">
       <div style={{ minWidth: "1200px" }} className="flex h-full">
         {/* Icon rail */}
-        <Sidebar
-          onOpenConnection={() => setShowConnectionModal(true)}
-          onOpenProducts={() => setShowLibrary(true)}
-        />
+        <Sidebar onOpenProducts={() => setShowLibrary(true)} />
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
           <TopNav />
           <div className="flex min-h-0 flex-1 overflow-hidden">
@@ -923,6 +921,7 @@ export default function CRMInboxDashboard() {
                 <button
                   type="button"
                   className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600"
+                  onClick={() => setShowConnectionModal(true)}
                 >
                   <Plus className="h-4 w-4" />
                 </button>

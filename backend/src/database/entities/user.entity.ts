@@ -18,8 +18,14 @@ export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ unique: true, nullable: true })
+  email: string;
+
+  @Column({ nullable: true, select: false })
+  password: string;
+
   /** ID único de usuario en Telegram */
-  @Column({ unique: true })
+  @Column({ unique: true, nullable: true })
   telegramId: string;
 
   /** Hash de autenticación para Telegram */

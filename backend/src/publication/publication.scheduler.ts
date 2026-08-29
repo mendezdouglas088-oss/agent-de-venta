@@ -4,13 +4,17 @@ import {
   OnModuleInit,
   OnModuleDestroy,
   Optional,
+  Inject,
 } from '@nestjs/common';
 import { ConfigService } from 'src/config/config.service';
 import { PublicationService } from './publication.service';
 import { TelegramGroupsService } from 'src/telegram-group/telegram-group.service';
-import { WhatsappConnectService } from 'src/whatsapp/whatsapp-connect.service';
 import { UserbotClientService } from 'src/userbot/userbot-client.service';
 import axios from 'axios';
+import {
+  WHATSAPP_PROVIDER,
+  WhatsappProvider,
+} from 'src/whatsapp/domain/whatsapp-provider.interface';
 
 /**
  * Scheduler de publicaciones automáticas.
@@ -33,7 +37,8 @@ export class PublicationScheduler implements OnModuleInit, OnModuleDestroy {
     private readonly configService: ConfigService,
     private readonly publicationService: PublicationService,
     private readonly telegramGroupsService: TelegramGroupsService,
-    private readonly whatsappConnectService: WhatsappConnectService,
+    @Inject(WHATSAPP_PROVIDER)
+    private readonly whatsappProvider: WhatsappProvider,
     // @Optional() — el userbot puede no estar disponible aún en el startup
     @Optional() private readonly userbotClient: UserbotClientService,
   ) {}
@@ -221,7 +226,7 @@ export class PublicationScheduler implements OnModuleInit, OnModuleDestroy {
         return;
       }
 
-      const status = this.whatsappConnectService.getStatus(ownerTelegramId);
+      const status = this.whatsappProvider.getStatus(ownerTelegramId);
 
       if (status !== 'connected') {
         this.logger.warn(
@@ -237,7 +242,7 @@ export class PublicationScheduler implements OnModuleInit, OnModuleDestroy {
         return;
       }
 
-      const result = await this.whatsappConnectService.sendImageToGroup(
+      const result = await this.whatsappProvider.sendImages(
         ownerTelegramId,
         groupId,
         productImages,
