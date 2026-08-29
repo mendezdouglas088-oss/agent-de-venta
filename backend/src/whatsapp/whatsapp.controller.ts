@@ -1,6 +1,9 @@
-import { Controller, Get, Post, Body, Query } from '@nestjs/common';
-import { WhatsappConnectService } from './whatsapp-connect.service';
+import { Controller, Get, Post, Body, Query, Inject } from '@nestjs/common';
 import { WhatsappService } from './whatsapp.service';
+import {
+  WHATSAPP_PROVIDER,
+  WhatsappProvider,
+} from './domain/whatsapp-provider.interface';
 
 /**
  * Controller HTTP para WhatsApp.
@@ -9,23 +12,21 @@ import { WhatsappService } from './whatsapp.service';
 @Controller('whatsapp')
 export class WhatsappController {
   constructor(
-    private readonly whatsappConnectService: WhatsappConnectService,
+    @Inject(WHATSAPP_PROVIDER) private readonly provider: WhatsappProvider,
     private readonly whatsappService: WhatsappService,
   ) {}
 
   // GET /whatsapp/status?telegramId=xxx
   @Get('status')
   getStatus(@Query('telegramId') telegramId: string) {
-    const status = this.whatsappConnectService.getStatus(telegramId ?? '');
+    const status = this.provider.getStatus(telegramId ?? '');
     return { status };
   }
 
   // GET /whatsapp/update-groups?telegramId=xxx
   @Get('update-groups')
   async updateGroups(@Query('telegramId') telegramId: string) {
-    const groups = await this.whatsappConnectService.getGroups(
-      telegramId ?? '',
-    );
+    const groups = await this.provider.getGroups(telegramId ?? '');
     await this.whatsappService.create(groups, telegramId);
     return groups;
   }
@@ -41,7 +42,7 @@ export class WhatsappController {
   async sendMessage(
     @Body() body: { telegramId: string; groupId: string; message: string },
   ) {
-    return await this.whatsappConnectService.sendMessageToGroup(
+    return await this.provider.sendText(
       body.telegramId,
       body.groupId,
       body.message,
@@ -59,7 +60,7 @@ export class WhatsappController {
       caption?: string;
     },
   ) {
-    return await this.whatsappConnectService.sendImageToGroup(
+    return await this.provider.sendImages(
       body.telegramId,
       body.groupId,
       body.imageUrls,

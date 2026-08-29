@@ -1,8 +1,13 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ConfigService } from 'src/config/config.service';
-import { WhatsappConnectService } from './whatsapp-connect.service';
 import { WhatsappService } from './whatsapp.service';
+import {
+  WHATSAPP_PROVIDER,
+  WhatsappGroupInterface,
+  WhatsappProvider,
+} from './domain/whatsapp-provider.interface';
+import { UsersService } from 'src/users/users.service';
 
 /**
  * Sincroniza grupos de WhatsApp para TODOS los usuarios conectados.
@@ -14,8 +19,9 @@ export class WhatsappScheduler {
 
   constructor(
     private readonly configService: ConfigService,
-    private readonly whatsappConnectService: WhatsappConnectService,
+    @Inject(WHATSAPP_PROVIDER) private readonly provider: WhatsappProvider,
     private readonly whatsappService: WhatsappService,
+    private readonly usersService: UsersService,
   ) {}
 
   @Cron(CronExpression.EVERY_30_SECONDS)
@@ -25,8 +31,7 @@ export class WhatsappScheduler {
       if (!config.syncWhatsappGroupsEnable) return;
 
       // Obtener todos los usuarios con sesión activa de WhatsApp
-      const connectedIds =
-        this.whatsappConnectService.getAllConnectedTelegramIds();
+      const connectedIds = this.provider.getAllConnectedSessionIds();
 
       if (connectedIds.length === 0) {
         this.logger.debug(
@@ -39,23 +44,26 @@ export class WhatsappScheduler {
         `🔄 Sincronizando grupos de ${connectedIds.length} usuario(s)...`,
       );
 
-      for (const telegramId of connectedIds) {
+      for (const sessionId of connectedIds) {
         try {
-          const groups =
-            await this.whatsappConnectService.getGroups(telegramId);
+          const groups = await this.provider.getGroups(sessionId);
           if ('error' in groups) {
             this.logger.error(
-              `❌ Error obteniendo grupos para ${telegramId}: ${groups.error}`,
+              `❌ Error obteniendo grupos para ${sessionId}: ${groups.error}`,
             );
             continue;
           }
-          await this.whatsappService.create(groups, telegramId);
+          const groupNewData: WhatsappGroupInterface[] = groups.map((g) => ({
+            whatsappGroupId: g.whatsappGroupId,
+            title: g.title,
+          }));
+          await this.whatsappService.create(groupNewData, sessionId);
           this.logger.log(
-            `✅ ${groups.length} grupos sync para usuario ${telegramId}`,
+            `✅ ${groups.length} grupos sync para usuario ${sessionId}`,
           );
         } catch (err) {
           this.logger.error(
-            `❌ Error sync usuario ${telegramId}: ${err.message}`,
+            `❌ Error sync usuario ${sessionId}: ${err.message}`,
           );
         }
       }
