@@ -13,8 +13,12 @@ import {
   WhatsappConnectionStatus,
   WhatsappGroupInterface,
   WhatsappContact,
+  WhatsappChatSummary,
 } from '../domain/whatsapp-provider.interface';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+
+import * as fs from 'fs/promises';
+import * as path from 'path';
 
 interface UserSession {
   client: Client | null;
@@ -52,10 +56,10 @@ export class WhatsappWebProvider
       session &&
       ['connecting', 'waiting_qr', 'connected'].includes(session.status)
     )
-      return; // ← ya en curso, ignora
+      return;
     if (!session) session = this.createSession(sessionId);
 
-    session.status = 'connecting'; // ← se marca YA, antes de cualquier await
+    session.status = 'connecting';
     try {
       await session.client?.destroy();
     } catch {
@@ -74,17 +78,33 @@ export class WhatsappWebProvider
     const session = this.sessions.get(sessionId);
     if (session?.client) {
       try {
-        await session.client.logout();
-      } catch {
-        /* noop */
-      }
-      try {
-        await session.client.destroy();
-      } catch {
-        /* noop */
+        await session.client.destroy(); // solo cierra Chromium, no toca archivos ni la cuenta en el server de WA
+      } catch (e) {
+        this.logger.warn(
+          `Error al destruir cliente ${sessionId}: ${e.message}`,
+        );
       }
     }
     this.sessions.delete(sessionId);
+
+    const sessionDir = path.join(
+      process.cwd(),
+      '.wwebjs_auth',
+      `session-${sessionId}`,
+    );
+    try {
+      // maxRetries/retryDelay es soporte nativo de Node para justo este caso (EBUSY/EPERM en Windows)
+      await fs.rm(sessionDir, {
+        recursive: true,
+        force: true,
+        maxRetries: 5,
+        retryDelay: 500,
+      });
+    } catch (e) {
+      this.logger.warn(
+        `No se pudo borrar la sesión ${sessionId}, seguirá logueada en WhatsApp: ${e.message}`,
+      );
+    }
   }
 
   getStatus(sessionId: string): WhatsappConnectionStatus {
@@ -142,6 +162,21 @@ export class WhatsappWebProvider
     return { ok: true };
   }
 
+  async getChats(sessionId: string): Promise<WhatsappChatSummary[]> {
+    const client = this.getClient(sessionId);
+    if (!client) throw new Error('WhatsApp no está conectado');
+    const chats = await client.getChats();
+    return chats
+      .filter((c) => !c.isGroup)
+      .map((c) => ({
+        chatId: c.id._serialized,
+        name: c.name || c.id.user,
+        lastMessage: c.lastMessage?.body,
+        lastMessageAt: c.lastMessage?.timestamp,
+        unreadCount: c.unreadCount,
+      }));
+  }
+
   // ── privado: nada de esto sale del módulo ──────────────────
   private getClient(sessionId: string): Client | null {
     const session = this.sessions.get(sessionId);
@@ -175,6 +210,7 @@ export class WhatsappWebProvider
       authStrategy: new LocalAuth({ clientId: sessionId }),
       puppeteer: {
         headless: true,
+        protocolTimeout: 300000, // 5 min, en vez del default 180s
         args: [
           '--no-sandbox',
           '--disable-setuid-sandbox',
@@ -193,6 +229,7 @@ export class WhatsappWebProvider
     });
     client.on('ready', () => {
       session.status = 'connected';
+      console.log('esta listo');
       session.lastQrString = null;
     });
     client.on('disconnected', () => {
