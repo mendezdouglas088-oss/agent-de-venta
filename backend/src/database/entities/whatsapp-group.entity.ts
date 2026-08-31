@@ -8,7 +8,7 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { User } from './user.entity';
+import { WhatsappConnections } from './whatsapp-conections.entity';
 
 /**
  * Entidad para grupos de WhatsApp
@@ -19,8 +19,8 @@ import { User } from './user.entity';
  */
 @Entity('whatsapp_groups')
 export class WhatsappGroup {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Index({ unique: true })
   @Column()
@@ -32,15 +32,19 @@ export class WhatsappGroup {
   @Column({ default: false })
   publishEnabled: boolean;
 
-  @ManyToOne(() => User, (user) => user.telegramGroups, {
-    onDelete: 'SET NULL',
-    nullable: true,
-  })
-  @JoinColumn({ name: 'userId' })
-  user: User;
+  @ManyToOne(
+    () => WhatsappConnections,
+    (whatsappConnections) => whatsappConnections.whatsappGroups,
+    {
+      onDelete: 'SET NULL',
+      nullable: true,
+    },
+  )
+  @JoinColumn({ name: 'whatsappConnectionId' })
+  whatsappConnection: WhatsappConnections;
 
   @Column({ nullable: true })
-  userId: string;
+  whatsappConnectionId: string;
 
   @CreateDateColumn()
   createdAt: Date;

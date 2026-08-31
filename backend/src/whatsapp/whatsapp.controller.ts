@@ -5,21 +5,24 @@ import {
   Body,
   Query,
   Inject,
-  NotFoundException,
   Res,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
-import { WhatsappService } from './whatsapp.service';
 import {
   WHATSAPP_PROVIDER,
   WhatsappProvider,
 } from './domain/whatsapp-provider.interface';
 import { Response } from 'express';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { WhatsappGroupService } from './whatsapp-group.service';
 
+@UseGuards(JwtAuthGuard)
 @Controller('whatsapp')
 export class WhatsappController {
   constructor(
     @Inject(WHATSAPP_PROVIDER) private readonly provider: WhatsappProvider,
-    private readonly whatsappService: WhatsappService,
+    private readonly whatsappGroupService: WhatsappGroupService,
   ) {}
 
   @Post('connect')
@@ -30,9 +33,25 @@ export class WhatsappController {
 
   @Get('qr')
   async getQr(@Query('telegramId') telegramId: string, @Res() res: Response) {
+    const status = this.provider.getStatus(telegramId);
+
+    if (['disconnected', 'error', 'auth_failed'].includes(status)) {
+      await this.provider.connect(telegramId); // crea la sesión si no existe
+    }
+
     const qr = await this.provider.getQr(telegramId);
-    if (!qr) throw new NotFoundException('No hay QR disponible todavía');
+    if (!qr) {
+      res
+        .status(202)
+        .json({ message: 'Generando QR, reintenta en unos segundos' });
+      return;
+    }
     res.type('image/png').send(qr);
+  }
+
+  @Get('chats')
+  async getChats(@Query('telegramId') telegramId: string) {
+    return this.provider.getChats(telegramId);
   }
 
   @Post('logout')
@@ -50,13 +69,20 @@ export class WhatsappController {
   @Get('update-groups')
   async updateGroups(@Query('telegramId') telegramId: string) {
     const groups = await this.provider.getGroups(telegramId ?? '');
-    await this.whatsappService.create(groups, telegramId);
+    await this.whatsappGroupService.create(groups, telegramId);
     return groups;
   }
 
   @Get('groups')
-  async getGroups(@Query('telegramId') telegramId?: string) {
-    return await this.whatsappService.findAll(telegramId);
+  async getGroups(
+    @Req() req: any,
+    @Query('whatConnectionId') whatConnectionId?: string,
+  ) {
+    const user = req.user;
+    return await this.whatsappGroupService.findAllById(
+      user.id,
+      whatConnectionId,
+    );
   }
 
   @Post('send')

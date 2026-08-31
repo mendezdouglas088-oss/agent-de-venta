@@ -1,6 +1,6 @@
 export class CreateUserDto {
   username: string;
-  firstName?: string;
+  fullName?: string;
   telegramBotToken: string;
   telegramId: string;
 }
