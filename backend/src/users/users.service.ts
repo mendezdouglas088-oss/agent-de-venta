@@ -43,12 +43,16 @@ export class UsersService {
   async createAccount(data: {
     email: string;
     password: string;
-    firstName?: string;
+    firstName: string;
+    phoneNumber: string;
+    username?: string;
   }): Promise<User> {
     const user = this.usersRepository.create({
       email: data.email,
       password: data.password, // ya viene hasheado desde AuthService
-      firstName: data.firstName ?? null,
+      username: data.username ?? null,
+      firstName: data.firstName,
+      phoneNumber: data.phoneNumber,
     });
     return this.usersRepository.save(user);
   }

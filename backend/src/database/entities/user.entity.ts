@@ -21,6 +21,18 @@ export class User {
   @Column({ unique: true, nullable: true })
   email: string;
 
+  /** Número de teléfono del usuario */
+  @Column({ unique: true, nullable: true })
+  phoneNumber: string;
+
+  /** Nombre de usuario en Telegram */
+  @Column({ nullable: true })
+  firstName: string;
+
+  /** Nombre de usuario en Telegram */
+  @Column({ unique: true, nullable: true })
+  username: string;
+
   @Column({ nullable: true, select: false })
   password: string;
 
@@ -47,18 +59,6 @@ export class User {
   /** Indica si el usuario tiene un plan activo */
   @Column({ default: false })
   hasPlan: boolean;
-
-  /** Número de teléfono del usuario */
-  @Column({ unique: true, nullable: true })
-  phoneNumber: string;
-
-  /** Nombre de usuario en Telegram */
-  @Column({ nullable: true })
-  firstName: string;
-
-  /** Nombre de usuario en Telegram */
-  @Column({ unique: true, nullable: true })
-  username: string;
 
   /** Plan activo del usuario */
   @OneToOne(() => UserPlan, (userPlan) => userPlan.user, {

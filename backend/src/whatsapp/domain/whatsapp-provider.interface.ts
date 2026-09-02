@@ -22,6 +22,15 @@ export interface SendResultInterface {
   error?: string;
 }
 
+// interface
+export interface WhatsappChatSummary {
+  chatId: string;
+  name: string;
+  lastMessage?: string;
+  lastMessageAt?: number;
+  unreadCount: number;
+}
+
 export interface WhatsappProvider {
   connect(sessionId: string): Promise<void>; // dispara la inicialización, no bloquea
   getQr(sessionId: string): Promise<Buffer | null>; // el cliente REST lo consulta hasta que exista
@@ -42,6 +51,7 @@ export interface WhatsappProvider {
   getAllConnectedSessionIds(): string[];
   getContact(sessionId: string, chatId: string): Promise<WhatsappContact>;
   logout(sessionId: string): Promise<void>;
+  getChats(sessionId: string): Promise<WhatsappChatSummary[]>;
 }
 
 export const WHATSAPP_PROVIDER = Symbol('WHATSAPP_PROVIDER');

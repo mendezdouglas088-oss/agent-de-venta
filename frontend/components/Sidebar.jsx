@@ -33,6 +33,11 @@ export default function Sidebar({ onOpenProducts }) {
   const router = useRouter();
   const pathname = usePathname();
 
+  function handleLogout() {
+    localStorage.removeItem("isAuthenticated");
+    router.replace("/login");
+  }
+
   return (
     <div className="flex h-full w-16 flex-col items-center justify-between border-r border-neutral-200 bg-white py-4">
       <div className="flex flex-col items-center gap-3">
@@ -57,7 +62,7 @@ export default function Sidebar({ onOpenProducts }) {
       </div>
 
       <div className="flex flex-col items-center gap-3">
-        <RailIcon icon={LogOut} label="Logout" />
+        <RailIcon icon={LogOut} label="Log out" onClick={handleLogout} />
       </div>
     </div>
   );
