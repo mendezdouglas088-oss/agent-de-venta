@@ -7,6 +7,7 @@ import { User } from './user.entity';
 import { Plan } from './plan.entity';
 import { UserPlan } from './user-plan.entity';
 import { Transfer } from './transfer.entity';
+import { WhatsappConnections } from './whatsapp-conections.entity';
 
 export const entities = [
   Product,
@@ -18,6 +19,7 @@ export const entities = [
   Plan,
   UserPlan,
   Transfer,
+  WhatsappConnections,
 ];
 
 export { Plan, PlanType, PLAN_CONFIGS } from './plan.entity';

@@ -1,13 +1,13 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ConfigService } from 'src/config/config.service';
-import { WhatsappService } from './whatsapp.service';
 import {
   WHATSAPP_PROVIDER,
   WhatsappGroupInterface,
   WhatsappProvider,
 } from './domain/whatsapp-provider.interface';
 import { UsersService } from 'src/users/users.service';
+import { WhatsappGroupService } from './whatsapp-group.service';
 
 /**
  * Sincroniza grupos de WhatsApp para TODOS los usuarios conectados.
@@ -20,7 +20,7 @@ export class WhatsappScheduler {
   constructor(
     private readonly configService: ConfigService,
     @Inject(WHATSAPP_PROVIDER) private readonly provider: WhatsappProvider,
-    private readonly whatsappService: WhatsappService,
+    private readonly whatsappGroupService: WhatsappGroupService,
     private readonly usersService: UsersService,
   ) {}
 
@@ -57,7 +57,7 @@ export class WhatsappScheduler {
             whatsappGroupId: g.whatsappGroupId,
             title: g.title,
           }));
-          await this.whatsappService.create(groupNewData, sessionId);
+          await this.whatsappGroupService.create(groupNewData, sessionId);
           this.logger.log(
             `✅ ${groups.length} grupos sync para usuario ${sessionId}`,
           );

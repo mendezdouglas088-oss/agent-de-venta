@@ -1,31 +1,44 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { QrCode } from "lucide-react";
+import { apiFetch } from "@/lib/api";
+import { useSocket } from "@/contexts/SocketContext";
 
-export function WhatsappConnectBox({ telegramId }: { telegramId: string }) {
-  const [qrUrl, setQrUrl] = useState<string | null>(null);
-  const [status, setStatus] = useState("disconnected");
-  const API = process.env.NEXT_PUBLIC_API_URL;
-
-  console.log("API:", API);
+export function WhatsappConnectBox({ connectionId, onConnected }) {
+  const { socket, whatsappState } = useSocket();
+  const conn = whatsappState[connectionId] || {};
+  const qrUrl = conn.qr ?? null;
+  const status = conn.status ?? "checking";
 
   useEffect(() => {
-    fetch(`${API}/whatsapp/connect?telegramId=${telegramId}`, {
-      method: "POST",
-    });
+    if (!connectionId) return;
+    // si ya hay qr/status guardado (context sobrevivió la navegación), no reinicies la conexión
+    if (whatsappState[connectionId]) return;
 
-    const interval = setInterval(async () => {
-      const s = await fetch(
-        `${API}/whatsapp/status?telegramId=${telegramId}`,
-      ).then((r) => r.json());
-      setStatus(s.status);
-      if (s.status === "connected") return clearInterval(interval);
+    apiFetch(`/whatsapp/status?telegramId=${connectionId}`)
+      .then((r) => r.json())
+      .then((s) => {
+        if (s.status !== "connected") {
+          apiFetch(`/whatsapp/connect?telegramId=${connectionId}`, {
+            method: "POST",
+          });
+        }
+      });
+    // whatsappState fuera de deps a propósito: solo queremos chequear el valor al montar
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [connectionId]);
 
-      const res = await fetch(`${API}/whatsapp/qr?telegramId=${telegramId}`);
-      if (res.ok) setQrUrl(URL.createObjectURL(await res.blob()));
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [telegramId]);
+  useEffect(() => {
+    if (!socket || !connectionId) return;
+    socket.emit("join", connectionId);
+  }, [socket, connectionId]);
+
+  useEffect(() => {
+    if (status === "connected") {
+      const t = setTimeout(() => onConnected?.(), 1200);
+      return () => clearTimeout(t);
+    }
+  }, [status, onConnected]);
 
   return (
     <div className="mx-auto flex h-48 w-48 items-center justify-center rounded-xl border border-neutral-200 bg-neutral-50">

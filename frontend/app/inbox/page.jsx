@@ -2,24 +2,14 @@
 
 import { useState, useRef, useEffect } from "react";
 import {
-  Zap,
   MessageSquare,
   Users,
-  Heart,
   Star,
-  Repeat,
   Clock,
-  CalendarDays,
-  BotMessageSquare,
-  ThumbsUp,
-  Trash2,
-  AlertTriangle,
-  Settings,
   Package,
   Plus,
   Search,
   Menu,
-  Home,
   ChevronDown,
   ChevronRight,
   CheckCircle2,
@@ -44,21 +34,17 @@ import {
   AtSign,
   FolderOpen,
   FileText,
-  Cable,
-  QrCode,
   Phone,
   Upload,
   ExternalLink,
   MessageSquareText,
-  Kanban,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { apiFetch } from "@/lib/api"; // ajusta el path a donde realmente lo tengas
 import { WhatsappConnectBox } from "@/components/WhatsappConnectBox";
+import { useSocket } from "@/contexts/SocketContext";
 
 import Sidebar from "@/components/Sidebar";
 import TopNav from "@/components/TopNav";
-
-const CURRENT_USER = { name: "Adib Hussain" };
 
 const MAIN_MENU = [
   { key: "channels", label: "Channels", icon: Hash },
@@ -66,6 +52,8 @@ const MAIN_MENU = [
   { key: "mentions", label: "Mentions", icon: AtSign },
   { key: "files", label: "Files & Media", icon: FolderOpen },
 ];
+
+const ALL_ACCOUNTS = "all";
 
 const CONVERSATION_FILTERS = [
   { key: "new", label: "New", icon: Inbox, count: 5 },
@@ -82,89 +70,6 @@ const CONTACTS = [
   "Mark Buffalo",
   "Patrick Shwayne",
   "Liang li",
-];
-
-const CHATS = [
-  {
-    id: 1,
-    name: "Penny Valeria",
-    snippet: "Let's see the...",
-    time: "12:35",
-    unread: 1,
-    channel: "whatsapp",
-  },
-  {
-    id: 2,
-    name: "Pharah House",
-    snippet: "sent",
-    time: "11:52",
-    unread: 0,
-    channel: "whatsapp",
-  },
-  {
-    id: 3,
-    name: "Leonard Kayle",
-    snippet: "Already started",
-    time: "11:31",
-    unread: 1,
-    channel: "telegram",
-  },
-  {
-    id: 4,
-    name: "Leslie Winkle",
-    snippet: "Hello, I have...",
-    time: "11:14",
-    unread: 0,
-    channel: "whatsapp",
-  },
-  {
-    id: 5,
-    name: "Richard Hammon",
-    snippet: "We'll proceed...",
-    time: "11:09",
-    unread: 11,
-    channel: "telegram",
-  },
-  {
-    id: 6,
-    name: "Rob Stark",
-    snippet: "Already started,",
-    time: "09:16",
-    unread: 1,
-    channel: "whatsapp",
-  },
-  {
-    id: 7,
-    name: "Rick Sanchez",
-    snippet: "I totally agree...",
-    time: "09:12",
-    unread: 1,
-    channel: "telegram",
-  },
-  {
-    id: 8,
-    name: "Howard Evans",
-    snippet: "Great, looking...",
-    time: "09:12",
-    unread: 0,
-    channel: "whatsapp",
-  },
-  {
-    id: 9,
-    name: "James Andres",
-    snippet: "We can reschedule",
-    time: "09:12",
-    unread: 0,
-    channel: "telegram",
-  },
-  {
-    id: 10,
-    name: "David Lee",
-    snippet: "Tomorrow it is...",
-    time: "05:49",
-    unread: 3,
-    channel: "whatsapp",
-  },
 ];
 
 const MESSAGES_BY_CHAT = {
@@ -203,13 +108,6 @@ const MESSAGES_BY_CHAT = {
     },
   ],
 };
-
-const GROUPS = [
-  "VIP Sales - WhatsApp",
-  "Flash Offers - Telegram",
-  "General Community - WhatsApp",
-  "Loyal Customers - Telegram",
-];
 
 const INITIAL_PRODUCTS = [
   {
@@ -300,7 +198,13 @@ function ChannelBadge({ channel }) {
   );
 }
 
-function CreatePostModal({ products, onClose, onSchedule, onAddProduct }) {
+function CreatePostModal({
+  products,
+  groups,
+  onClose,
+  onSchedule,
+  onAddProduct,
+}) {
   const [content, setContent] = useState("");
   const [selectedIds, setSelectedIds] = useState([]);
   const [selectedGroups, setSelectedGroups] = useState([]);
@@ -427,7 +331,7 @@ function CreatePostModal({ products, onClose, onSchedule, onAddProduct }) {
               Target groups
             </label>
             <div className="flex flex-wrap gap-2">
-              {GROUPS.map((g) => {
+              {groups.map((g) => {
                 const selected = selectedGroups.includes(g);
                 return (
                   <button
@@ -620,6 +524,80 @@ function CreateProductModal({ onClose, onCreate }) {
   );
 }
 
+function AddUserModal({ onClose, onCreated }) {
+  const [name, setName] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  function handleSave() {
+    if (!name.trim()) return;
+    setSaving(true);
+    setError("");
+    apiFetch("/whatsapp-connections/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nameUserConnected: name.trim() }),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Request failed");
+        return res.json();
+      })
+      .then(() => onCreated())
+      .catch(() => setError("Could not create the account. Try again."))
+      .finally(() => setSaving(false));
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/40 p-4"
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl"
+      >
+        <div className="mb-5 flex items-start justify-between">
+          <h2 className="text-base font-semibold text-neutral-900">Add User</h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-neutral-400">
+          Account name
+        </label>
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="e.g. Sarah Connor"
+          className="w-full rounded-xl border border-neutral-200 px-3 py-2 text-sm text-neutral-700 placeholder-neutral-400 outline-none focus:border-neutral-400"
+        />
+        {error && <p className="mt-1.5 text-xs text-rose-500">{error}</p>}
+        <div className="mt-6 flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-xl px-4 py-2 text-sm font-medium text-neutral-500 hover:bg-neutral-100"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={!name.trim() || saving}
+            className="rounded-xl bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {saving ? "Saving..." : "Save"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ProductLibraryModal({ products, onClose, onAddProduct }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/40 p-4">
@@ -758,7 +736,76 @@ function ConnectionTypeModal({ onClose, onSelect }) {
   );
 }
 
-function WhatsAppQRModal({ onClose }) {
+function SelectUserModal({ accounts, onClose, onSelectAccount }) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/40 p-4"
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl"
+      >
+        <div className="mb-5 flex items-start justify-between">
+          <div>
+            <h2 className="text-base font-semibold text-neutral-900">
+              Select Another User
+            </h2>
+            <p className="mt-1 text-sm text-neutral-400">
+              Choose which account you want to work with.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="space-y-2">
+          {accounts.length > 1 && (
+            <button
+              type="button"
+              onClick={() =>
+                onSelectAccount({ id: ALL_ACCOUNTS, name: "All Users" })
+              }
+              className="flex w-full items-center gap-3 rounded-xl border border-neutral-200 p-3 text-left hover:border-sky-400 hover:bg-sky-50"
+            >
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-sky-500 text-white">
+                <Users className="h-4 w-4" />
+              </span>
+              <span>
+                <span className="block text-sm font-medium text-neutral-800">
+                  All Users
+                </span>
+                <span className="block text-xs text-neutral-400">
+                  Show every account at once
+                </span>
+              </span>
+            </button>
+          )}
+
+          {accounts.map((account) => (
+            <button
+              key={account.id}
+              type="button"
+              onClick={() => onSelectAccount(account)}
+              className="flex w-full items-center gap-3 rounded-xl border border-neutral-200 p-3 text-left hover:border-emerald-400 hover:bg-emerald-50"
+            >
+              <Avatar name={account.name} size="h-9 w-9" />
+              <span className="text-sm font-medium text-neutral-800">
+                {account.name}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function WhatsAppQRModal({ connectingAccountId, onClose }) {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/40 p-4"
@@ -780,9 +827,14 @@ function WhatsAppQRModal({ onClose }) {
             <X className="h-4 w-4" />
           </button>
         </div>
-        <div className="mx-auto flex h-48 w-48 items-center justify-center rounded-xl border border-neutral-200 bg-neutral-50">
-          <WhatsappConnectBox telegramId="763917154" />
-        </div>
+        {connectingAccountId ? (
+          <WhatsappConnectBox
+            connectionId={connectingAccountId}
+            onConnected={onClose}
+          />
+        ) : (
+          <p className="text-sm text-neutral-500">No account selected.</p>
+        )}
         <p className="mt-4 text-sm text-neutral-500">
           Open WhatsApp on your phone and scan this code to link your account.
         </p>
@@ -873,8 +925,9 @@ function TelegramConnectModal({ onClose, onConnect }) {
 }
 
 export default function CRMInboxDashboard() {
-  const [activeChatId, setActiveChatId] = useState(2);
+  const [activeChatId, setActiveChatId] = useState(null);
   const [activeFilter, setActiveFilter] = useState("all");
+  const [connectingAccountId, setConnectingAccountId] = useState(null);
   const [negotiationsOpen, setNegotiationsOpen] = useState(true);
   const [bookmarked, setBookmarked] = useState(false);
   const [messageDraft, setMessageDraft] = useState("");
@@ -884,10 +937,50 @@ export default function CRMInboxDashboard() {
   const [showLibrary, setShowLibrary] = useState(false);
   const [toast, setToast] = useState("");
   const [showConnectionModal, setShowConnectionModal] = useState(false);
+  const [showSelectUserModal, setShowSelectUserModal] = useState(false);
+  const { socket, clearPendingAttention, whatsappState } = useSocket();
+  const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [showWhatsAppQR, setShowWhatsAppQR] = useState(false);
   const [showTelegramForm, setShowTelegramForm] = useState(false);
+  const [groups, setGroups] = useState([]);
+  const [accounts, setAccounts] = useState([]);
 
-  const router = useRouter();
+  function fetchAccounts() {
+    apiFetch("/whatsapp-connections")
+      .then((res) => res.json())
+      .then((data) => {
+        const mapped = (Array.isArray(data) ? data : []).map((a) => ({
+          id: a.id,
+          name: a.nameUserConnected,
+          connectionId: a.connectionId,
+        }));
+        setAccounts(mapped);
+      })
+      .catch(() => setToast("Could not load accounts."));
+  }
+
+  useEffect(() => {
+    fetchAccounts();
+  }, []);
+
+  const [selectedAccountId, setSelectedAccountId] = useState(null);
+  const effectiveAccountId =
+    selectedAccountId ?? (accounts[0] ? accounts[0].id : null);
+
+  useEffect(() => {
+    if (!effectiveAccountId) return;
+    const qs =
+      effectiveAccountId === ALL_ACCOUNTS
+        ? ""
+        : `?connectionId=${effectiveAccountId}`;
+    apiFetch(`/whatsapp/groups${qs}`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Request failed");
+        return res.json();
+      })
+      .then(setGroups)
+      .catch(() => setToast("Could not load groups."));
+  }, [effectiveAccountId]);
 
   useEffect(() => {
     if (!toast) return;
@@ -895,8 +988,114 @@ export default function CRMInboxDashboard() {
     return () => clearTimeout(t);
   }, [toast]);
 
-  const activeChat = CHATS.find((c) => c.id === activeChatId) || CHATS[0];
+  const [selectedAccountName, setSelectedAccountName] = useState(null);
+
+  const effectiveAccountName =
+    selectedAccountName ?? (accounts[0] ? accounts[0].name : "");
+
+  const [chats, setChats] = useState([]);
+
+  function formatChatTime(timestamp) {
+    if (!timestamp) return "";
+    return new Date(timestamp * 1000).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
+  useEffect(() => {
+    if (!effectiveAccountId) return;
+    const qs =
+      effectiveAccountId === ALL_ACCOUNTS
+        ? ""
+        : `?connectionId=${effectiveAccountId}`;
+    apiFetch(`/whatsapp/chats${qs}`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Request failed");
+        return res.json();
+      })
+      .then((data) => {
+        const mapped = (Array.isArray(data) ? data : []).map((c) => ({
+          id: `${c.connectionId}::${c.chatId}`,
+          connectionId: c.connectionId,
+          chatId: c.chatId,
+          name: c.name,
+          snippet: c.lastMessage || "",
+          time: formatChatTime(c.lastMessageAt),
+          unread: c.unreadCount || 0,
+          channel: "whatsapp",
+        }));
+        setChats(mapped);
+      })
+      .catch(() => setToast("Could not load chats."));
+  }, [effectiveAccountId]);
+
+  const activeChat = chats.find((c) => c.id === activeChatId) ||
+    chats[0] || { name: "" };
+  const effectiveChatId = activeChatId ?? (chats[0] ? chats[0].id : null);
+  const effectiveChatIdRef = useRef(effectiveChatId);
+  useEffect(() => {
+    effectiveChatIdRef.current = effectiveChatId;
+  }, [effectiveChatId]);
   const messages = MESSAGES_BY_CHAT[activeChatId] || [];
+
+  function upsertChatFromMessage(payload) {
+    const compositeId = `${payload.sessionId}::${payload.chatId}`;
+    setChats((prev) => {
+      const idx = prev.findIndex((c) => c.id === compositeId);
+      const time = new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      const isActive = compositeId === effectiveChatIdRef.current;
+
+      if (idx === -1) {
+        return [
+          {
+            id: compositeId,
+            connectionId: payload.sessionId,
+            chatId: payload.chatId,
+            name: payload.contact?.name || payload.chatId,
+            snippet: payload.text,
+            time,
+            unread: isActive ? 0 : 1,
+            channel: "whatsapp",
+          },
+          ...prev,
+        ];
+      }
+      const updated = [...prev];
+      updated[idx] = {
+        ...updated[idx],
+        snippet: payload.text,
+        time,
+        unread: isActive ? 0 : updated[idx].unread + 1,
+      };
+      const [chat] = updated.splice(idx, 1);
+      return [chat, ...updated];
+    });
+  }
+
+  useEffect(() => {
+    if (!socket) return;
+    socket.on("whatsapp:message", upsertChatFromMessage);
+    return () => socket.off("whatsapp:message", upsertChatFromMessage);
+  }, [socket]);
+
+  useEffect(() => {
+    const pending = Object.entries(whatsappState).find(
+      ([, v]) => v.status === "qr",
+    );
+    if (pending) {
+      const [connectionId] = pending;
+      setConnectingAccountId(connectionId);
+      setShowWhatsAppQR(true);
+    }
+  }, [whatsappState]);
+
+  useEffect(() => {
+    clearPendingAttention(); // apaga el parpadeo del ícono al entrar a Inbox
+  }, []);
 
   function handleProductCreated(product) {
     setProducts((prev) => [...prev, product]);
@@ -921,18 +1120,29 @@ export default function CRMInboxDashboard() {
                 <button
                   type="button"
                   className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600"
-                  onClick={() => setShowConnectionModal(true)}
+                  onClick={() => setShowAddUserModal(true)}
                 >
                   <Plus className="h-4 w-4" />
                 </button>
               </div>
 
-              <div className="mt-4 flex items-center gap-2.5 px-5">
-                <Avatar name={CURRENT_USER.name} size="h-8 w-8" />
+              <button
+                type="button"
+                className="mt-4 flex items-center gap-2.5 px-5"
+                onClick={() => {
+                  if (accounts.length > 1) {
+                    setShowSelectUserModal(true);
+                  } else {
+                    setConnectingAccountId(accounts[0]?.connectionId ?? null);
+                    setShowConnectionModal(true);
+                  }
+                }}
+              >
+                <Avatar name={effectiveAccountName || "?"} size="h-8 w-8" />
                 <span className="text-sm font-medium text-neutral-700">
-                  {CURRENT_USER.name}
+                  {effectiveAccountName}
                 </span>
-              </div>
+              </button>
 
               <div className="mt-6 flex-1 overflow-y-auto px-3">
                 <div className="space-y-0.5">
@@ -1068,8 +1278,8 @@ export default function CRMInboxDashboard() {
               </div>
 
               <div className="mt-3 flex-1 space-y-1 overflow-y-auto px-3 pb-4">
-                {CHATS.map((chat) => {
-                  const isActive = chat.id === activeChatId;
+                {chats.map((chat) => {
+                  const isActive = chat.id === effectiveChatId;
                   return (
                     <button
                       key={chat.id}
@@ -1407,6 +1617,7 @@ export default function CRMInboxDashboard() {
       {showPostModal && (
         <CreatePostModal
           products={products}
+          groups={groups}
           onClose={() => setShowPostModal(false)}
           onSchedule={(summary) => {
             setShowPostModal(false);
@@ -1426,8 +1637,38 @@ export default function CRMInboxDashboard() {
           }}
         />
       )}
+
+      {showSelectUserModal && (
+        <SelectUserModal
+          accounts={accounts}
+          onClose={() => setShowSelectUserModal(false)}
+          onSelectAccount={(account) => {
+            setSelectedAccountName(account.name);
+            setSelectedAccountId(account.id ?? null);
+            setConnectingAccountId(
+              account.id === ALL_ACCOUNTS ? null : (account.id ?? null),
+            );
+            setShowSelectUserModal(false);
+          }}
+        />
+      )}
+
+      {showAddUserModal && (
+        <AddUserModal
+          onClose={() => setShowAddUserModal(false)}
+          onCreated={() => {
+            setShowAddUserModal(false);
+            fetchAccounts();
+            setToast("Account created.");
+          }}
+        />
+      )}
+
       {showWhatsAppQR && (
-        <WhatsAppQRModal onClose={() => setShowWhatsAppQR(false)} />
+        <WhatsAppQRModal
+          connectingAccountId={connectingAccountId}
+          onClose={() => setShowWhatsAppQR(false)}
+        />
       )}
       {showTelegramForm && (
         <TelegramConnectModal

@@ -21,6 +21,8 @@ import {
 } from "lucide-react";
 import { RailIcon } from "./ui-primitives";
 
+import { useSocket } from "@/contexts/SocketContext";
+
 const NAV_ITEMS = [
   { icon: Home, label: "Dashboard", path: "/" },
   { icon: Zap, label: "Automations", path: "/automation" },
@@ -32,6 +34,8 @@ const NAV_ITEMS = [
 export default function Sidebar({ onOpenProducts }) {
   const router = useRouter();
   const pathname = usePathname();
+
+  const { pendingAttention } = useSocket();
 
   function handleLogout() {
     localStorage.removeItem("isAuthenticated");
@@ -49,16 +53,10 @@ export default function Sidebar({ onOpenProducts }) {
             active={pathname === item.path}
             label={item.label}
             onClick={() => router.push(item.path)}
+            pulse={item.path === "/inbox" && pendingAttention}
           />
         ))}
         <RailIcon icon={Package} label="Products" onClick={onOpenProducts} />
-        {/* <RailIcon icon={Users} label="Contacts" />
-        <RailIcon icon={Heart} label="Favorites" />
-        <RailIcon icon={Star} label="Starred" />
-        <RailIcon icon={Repeat} label="History" />
-        <RailIcon icon={Clock} label="Recent" />
-        <RailIcon icon={ThumbsUp} label="Approved" />
-        <RailIcon icon={Trash2} label="Trash" /> */}
       </div>
 
       <div className="flex flex-col items-center gap-3">

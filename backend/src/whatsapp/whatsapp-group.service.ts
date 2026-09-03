@@ -4,12 +4,16 @@ import { WhatsappGroup } from 'src/database/entities/whatsapp-group.entity';
 import { Repository } from 'typeorm';
 import { UsersService } from 'src/users/users.service';
 import { WhatsappGroupInterface } from './domain/whatsapp-provider.interface';
+import { WhatsappConnections } from 'src/database/entities/whatsapp-conections.entity';
+import { WhatsappConnectionsService } from './whatsapp-connections.service';
 
 @Injectable()
-export class WhatsappService {
+export class WhatsappGroupService {
   constructor(
     @InjectRepository(WhatsappGroup)
-    private repo: Repository<WhatsappGroup>,
+    private repoWhatsappGroup: Repository<WhatsappGroup>,
+    @InjectRepository(WhatsappConnections)
+    private whatsappConnectionsService: WhatsappConnectionsService,
     private readonly usersService: UsersService,
   ) {}
 
@@ -18,13 +22,16 @@ export class WhatsappService {
    * @param listGroups Lista de grupos obtenidos de whatsapp-web.js
    * @param telegramId telegramId del usuario dueño (se convierte a UUID internamente)
    */
-  async create(groups: WhatsappGroupInterface[], userId?: string | null) {
+  async create(
+    groups: WhatsappGroupInterface[],
+    whatsappConnectionId?: string | null,
+  ) {
     for (const group of groups) {
-      await this.repo.upsert(
+      await this.repoWhatsappGroup.upsert(
         {
           whatsappGroupId: group.whatsappGroupId,
           title: group.title,
-          userId: userId ?? null,
+          whatsappConnectionId: whatsappConnectionId || null,
         },
         {
           conflictPaths: ['whatsappGroupId'],
@@ -34,23 +41,24 @@ export class WhatsappService {
     }
   }
 
-  /** Lista grupos. Si se pasa userId (UUID), filtra por usuario. */
-  async findAll(userId?: string) {
-    if (userId) return await this.repo.find({ where: { userId } });
-    return await this.repo.find();
-  }
-
-  /**
-   * Lista grupos por telegramId (convierte a UUID antes de filtrar).
-   */
-  async findAllByTelegramId(telegramId: string) {
-    const user = await this.usersService.findByTelegramId(telegramId);
+  async findAllById(userId: string, whatConnectionId?: string) {
+    const user = await this.usersService.findOne(userId);
     if (!user) return [];
-    return await this.repo.find({ where: { userId: user.id } });
+    if (!whatConnectionId) {
+      return await this.repoWhatsappGroup.find({
+        where: { whatsappConnection: { userId } },
+      });
+    }
+    return await this.repoWhatsappGroup.find({
+      where: {
+        whatsappConnectionId: whatConnectionId,
+        whatsappConnection: { userId },
+      },
+    });
   }
 
-  async findById(id: number) {
-    return await this.repo.findOne({ where: { id } });
+  async findAll() {
+    return await this.repoWhatsappGroup.find();
   }
 
   reconstructFullId(numericId: string): string {
@@ -58,18 +66,20 @@ export class WhatsappService {
   }
 
   async findOne(whatsappGroupId: string) {
-    return await this.repo.findOne({ where: { whatsappGroupId } });
+    return await this.repoWhatsappGroup.findOne({ where: { whatsappGroupId } });
   }
 
   async findByNumericId(numericId: string) {
-    const groups = await this.repo.find();
+    const groups = await this.repoWhatsappGroup.find();
     return groups.find((g) => g.whatsappGroupId.split('@')[0] === numericId);
   }
 
   async updatePublish(whatsappGroupId: string) {
-    const group = await this.repo.findOne({ where: { whatsappGroupId } });
+    const group = await this.repoWhatsappGroup.findOne({
+      where: { whatsappGroupId },
+    });
     if (!group) return null;
     group.publishEnabled = !group.publishEnabled;
-    return await this.repo.save(group);
+    return await this.repoWhatsappGroup.save(group);
   }
 }

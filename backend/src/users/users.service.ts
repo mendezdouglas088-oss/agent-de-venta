@@ -27,7 +27,7 @@ export class UsersService {
       const user = this.usersRepository.create({
         telegramId: createUserDto.telegramId,
         username: createUserDto.username ?? null,
-        firstName: createUserDto.firstName ?? null,
+        fullName: createUserDto.fullName ?? null,
         // telegramBotToken: omitido — es compartido por todos, no es dato del usuario
       });
       return await this.usersRepository.save(user);
@@ -43,7 +43,7 @@ export class UsersService {
   async createAccount(data: {
     email: string;
     password: string;
-    firstName: string;
+    fullName: string;
     phoneNumber: string;
     username?: string;
   }): Promise<User> {
@@ -51,7 +51,7 @@ export class UsersService {
       email: data.email,
       password: data.password, // ya viene hasheado desde AuthService
       username: data.username ?? null,
-      firstName: data.firstName,
+      fullName: data.fullName,
       phoneNumber: data.phoneNumber,
     });
     return this.usersRepository.save(user);
@@ -80,7 +80,7 @@ export class UsersService {
   async findByEmail(email: string): Promise<User | null> {
     return this.usersRepository.findOne({
       where: { email },
-      select: ['id', 'email', 'password', 'firstName', 'isActive', 'hasPlan'], // password incluido a propósito, solo aquí
+      select: ['id', 'email', 'password', 'fullName', 'isActive', 'hasPlan'], // password incluido a propósito, solo aquí
     });
   }
 

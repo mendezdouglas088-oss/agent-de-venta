@@ -11,6 +11,11 @@ export interface WhatsappGroupInterface {
   title: string;
 }
 
+export interface WhatsappConnectionsInterface {
+  nameUserConnected: string;
+  user: any;
+}
+
 export interface WhatsappContact {
   chatId: string; // identificador único, ej: 5215512345678@c.us
   name: string;

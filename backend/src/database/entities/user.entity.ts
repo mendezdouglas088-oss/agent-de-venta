@@ -10,8 +10,8 @@ import {
 import { Product } from './product.entity';
 import { Publication } from './publication.entity';
 import { TelegramGroup } from './telegram-group.entity';
-import { WhatsappGroup } from './whatsapp-group.entity';
 import { UserPlan } from './user-plan.entity';
+import { WhatsappConnections } from './whatsapp-conections.entity';
 
 @Entity('users')
 export class User {
@@ -25,9 +25,8 @@ export class User {
   @Column({ unique: true, nullable: true })
   phoneNumber: string;
 
-  /** Nombre de usuario en Telegram */
   @Column({ nullable: true })
-  firstName: string;
+  fullName: string;
 
   /** Nombre de usuario en Telegram */
   @Column({ unique: true, nullable: true })
@@ -80,17 +79,21 @@ export class User {
   })
   publications: Publication[];
 
+  @OneToMany(
+    () => WhatsappConnections,
+    (whatsappConnection) => whatsappConnection.user,
+    {
+      cascade: true,
+      onDelete: 'CASCADE',
+    },
+  )
+  whatsappConnections: WhatsappConnections[];
+
   @OneToMany(() => TelegramGroup, (telegramGroup) => telegramGroup.user, {
     cascade: true,
     onDelete: 'CASCADE',
   })
   telegramGroups: TelegramGroup[];
-
-  @OneToMany(() => WhatsappGroup, (whatsappGroup) => whatsappGroup.user, {
-    cascade: true,
-    onDelete: 'CASCADE',
-  })
-  whatsappGroups: WhatsappGroup[];
 
   @CreateDateColumn()
   createdAt: Date;
