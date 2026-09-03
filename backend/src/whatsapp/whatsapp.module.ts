@@ -28,7 +28,11 @@ import { WhatsappConnections } from 'src/database/entities/whatsapp-conections.e
     WhatsappScheduler,
     { provide: WHATSAPP_PROVIDER, useClass: WhatsappWebProvider },
   ],
-  exports: [WhatsappGroupService, WHATSAPP_PROVIDER],
+  exports: [
+    WhatsappGroupService,
+    WHATSAPP_PROVIDER,
+    WhatsappConnectionsService,
+  ],
   controllers: [WhatsappController, WhatsappConnectionsController],
 })
 export class WhatsappModule {}

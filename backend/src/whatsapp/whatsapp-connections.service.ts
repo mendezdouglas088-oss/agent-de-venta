@@ -2,34 +2,48 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UsersService } from 'src/users/users.service';
-import { WhatsappConnectionsInterface } from './domain/whatsapp-provider.interface';
 import { WhatsappConnections } from 'src/database/entities/whatsapp-conections.entity';
 
 @Injectable()
 export class WhatsappConnectionsService {
   constructor(
     @InjectRepository(WhatsappConnections)
-    private repoWhatsappConnections: Repository<WhatsappConnections>,
+    private repo: Repository<WhatsappConnections>,
     private readonly usersService: UsersService,
   ) {}
 
-  async create(data: WhatsappConnectionsInterface) {
-    const whatConnection = await this.findAllByUserID(data.user.id);
+  async create(data: {
+    fullName: string;
+    userId: string;
+    nameUserConnected: string;
+  }) {
+    const whatConnection = await this.findAllByUserID(data.userId);
     const res: { nameUserConnected: string; userId: string } = {
-      userId: data.user.id,
-      nameUserConnected: data.user.fullName,
+      userId: data.userId,
+      nameUserConnected: data.fullName,
     };
-    if (!whatConnection) {
-      return this.repoWhatsappConnections.save(res);
+    if (whatConnection.length > 0) {
+      res['nameUserConnected'] = data.nameUserConnected;
     }
-    res['nameUserConnected'] = data.nameUserConnected;
-    return this.repoWhatsappConnections.save(res);
+    const resObj = this.repo.create(res);
+    return this.repo.save(resObj);
+  }
+
+  async belongsToUser(connectionId: string, userId: string): Promise<boolean> {
+    const connection = await this.repo.findOne({
+      where: { id: connectionId, userId },
+    });
+    return !!connection;
   }
 
   async findAllByUserID(userId: string) {
-    return await this.repoWhatsappConnections.find({
+    return await this.repo.find({
       where: { userId },
       relations: ['whatsappGroups'],
     });
+  }
+
+  async findAllByUser(userId: string) {
+    return this.repo.find({ where: { userId } });
   }
 }

@@ -10,10 +10,11 @@ export class WhatsappConnectionsController {
   ) {}
 
   @Post('create')
-  create(@Req() req, @Body() body: { nameUserConnected: string }) {
+  create(@Req() req, @Body() body: { nameUserConnected?: string }) {
     const user = req.user;
     return this.whatsappConnectionsService.create({
-      user,
+      fullName: user.fullName,
+      userId: user.sub,
       nameUserConnected: body.nameUserConnected,
     });
   }
