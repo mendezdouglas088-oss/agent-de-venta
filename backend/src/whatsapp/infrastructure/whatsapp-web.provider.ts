@@ -33,7 +33,7 @@ export class WhatsappWebProvider
   private readonly logger = new Logger(WhatsappWebProvider.name);
   private readonly sessions = new Map<string, UserSession>();
 
-  constructor(readonly eventEmitter: EventEmitter2) {} // EventEmitter2
+  constructor(private readonly eventEmitter: EventEmitter2) {}
 
   async onModuleInit() {
     this.logger.log('Sesiones de WhatsApp se crean bajo demanda');
@@ -205,6 +205,7 @@ export class WhatsappWebProvider
   }
 
   private async initClientForUser(sessionId: string): Promise<void> {
+    console.log('iniciando cliente para', sessionId);
     const session = this.sessions.get(sessionId)!;
     const client = new Client({
       authStrategy: new LocalAuth({ clientId: sessionId }),
@@ -212,6 +213,7 @@ export class WhatsappWebProvider
         headless: false,
         protocolTimeout: 300000, // 5 min, en vez del default 180s
         args: [
+          '--disable-dev-shm-usage',
           '--no-sandbox',
           '--disable-setuid-sandbox',
           '--disable-dev-shm-usage',
@@ -223,20 +225,51 @@ export class WhatsappWebProvider
     });
     session.client = client;
 
-    client.on('qr', (qr) => {
+    client.on('qr', async (qr) => {
+      this.logger.log(`[${sessionId}] QR RECEIVED`);
       session.status = 'waiting_qr';
       session.lastQrString = qr;
+      this.logger.log(
+        `QR generado para ${sessionId} (escanea en WhatsApp Web)`,
+      );
+      const qrImage = await QRCode.toDataURL(qr);
+      this.logger.log(`QR generado para ${sessionId}`);
+      this.eventEmitter.emit('whatsapp.qr', {
+        connectionId: sessionId,
+        qr: qrImage,
+      });
     });
+
     client.on('ready', () => {
       session.status = 'connected';
-      console.log('esta listo');
       session.lastQrString = null;
+      this.eventEmitter.emit('whatsapp.status', {
+        connectionId: sessionId,
+        status: 'connected',
+      });
     });
-    client.on('disconnected', () => {
+
+    client.on('authenticated', () => {
+      this.logger.log(`[${sessionId}] AUTHENTICATED`);
+    });
+
+    client.on('disconnected', (reason) => {
+      this.logger.warn(`[${sessionId}] DISCONNECTED: ${reason}`);
       session.status = 'disconnected';
+      this.eventEmitter.emit('whatsapp.status', {
+        connectionId: sessionId,
+        status: 'disconnected',
+      });
     });
-    client.on('auth_failure', () => {
+
+    client.on('auth_failure', (message) => {
+      console.log('AUTH FAILURE', message);
+      this.logger.error(`[${sessionId}] AUTH FAILURE: ${message}`);
       session.status = 'auth_failed';
+      this.eventEmitter.emit('whatsapp.status', {
+        connectionId: sessionId,
+        status: 'auth_failed',
+      });
     });
 
     client.on('message', async (msg) => {
@@ -258,7 +291,12 @@ export class WhatsappWebProvider
     try {
       await client.initialize();
     } catch (e) {
+      console.log('ERROR', e);
       session.status = 'error';
+      this.eventEmitter.emit('whatsapp.status', {
+        connectionId: sessionId,
+        status: 'error',
+      });
       this.logger.error(
         `Error al inicializar WhatsApp para ${sessionId}`,
         e.message,
@@ -266,6 +304,7 @@ export class WhatsappWebProvider
     }
   }
 
+  // ========================PUBLIC METHODS========================
   getAllConnectedSessionIds(): string[] {
     const result: string[] = [];
     this.sessions.forEach((session, id) => {
