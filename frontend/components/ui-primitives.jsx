@@ -37,6 +37,7 @@ export function RailIcon({
   active = false,
   onClick,
   label,
+  pulse = false, // ← nuevo
 }) {
   const toneClasses =
     tone === "brand"
@@ -49,9 +50,15 @@ export function RailIcon({
       type="button"
       title={label}
       onClick={onClick}
-      className={`flex h-10 w-10 items-center justify-center rounded-xl transition-colors ${toneClasses}`}
+      className={`relative flex h-10 w-10 items-center justify-center rounded-xl transition-colors ${toneClasses}`}
     >
       <Icon className="h-5 w-5" strokeWidth={2} />
+      {pulse && (
+        <span className="absolute -top-0.5 -right-0.5 flex h-3 w-3">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-75" />
+          <span className="relative inline-flex h-3 w-3 rounded-full bg-rose-500" />
+        </span>
+      )}
     </button>
   );
 }

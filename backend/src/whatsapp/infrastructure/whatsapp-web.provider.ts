@@ -209,7 +209,7 @@ export class WhatsappWebProvider
     const client = new Client({
       authStrategy: new LocalAuth({ clientId: sessionId }),
       puppeteer: {
-        headless: true,
+        headless: false,
         protocolTimeout: 300000, // 5 min, en vez del default 180s
         args: [
           '--no-sandbox',

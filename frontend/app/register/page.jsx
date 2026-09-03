@@ -12,11 +12,13 @@ import {
   Phone,
 } from "lucide-react";
 
+import { apiFetch } from "@/lib/api";
+
 export default function RegisterPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [firstName, setFirstName] = useState("");
+  const [fullName, setFullName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
 
   const [showPassword, setShowPassword] = useState(false);
@@ -33,18 +35,25 @@ export default function RegisterPage() {
       const res = await fetch(`${API}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, firstName, phoneNumber }),
+        body: JSON.stringify({ email, password, fullName, phoneNumber }),
       });
 
+      const data = await res.json();
+
       if (!res.ok) {
-        const data = await res.json();
         setError(data.message || "Could not create account.");
         return;
       }
 
-      const data = await res.json();
       localStorage.setItem("accessToken", data.accessToken);
       localStorage.setItem("isAuthenticated", "true");
+
+      await apiFetch(`/whatsapp-connections/create`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nameUserConnected: "" }),
+      });
+
       router.replace("/");
     } catch {
       setError("No se pudo conectar con el servidor.");
@@ -88,16 +97,16 @@ export default function RegisterPage() {
 
           <div>
             <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-neutral-400 dark:text-neutral-500">
-              First Name
+              Full Name
             </label>
             <div className="flex items-center gap-2 rounded-xl border border-neutral-200 bg-white px-3 py-2 dark:border-neutral-700 dark:bg-neutral-800">
               <User className="h-3.5 w-3.5 shrink-0 text-neutral-400" />
               <input
                 type="text"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                placeholder="Pedro"
-                autoComplete="given-name"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Pedro Pérez"
+                autoComplete="name"
                 className="w-full bg-transparent text-sm text-neutral-700 placeholder-neutral-400 outline-none dark:text-neutral-200"
               />
             </div>

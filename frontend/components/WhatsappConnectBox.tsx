@@ -1,31 +1,52 @@
 "use client";
 import { useEffect, useState } from "react";
 import { QrCode } from "lucide-react";
+import { apiFetch } from "@/lib/api";
+import { useSocket } from "@/contexts/SocketContext";
 
-export function WhatsappConnectBox({ telegramId }: { telegramId: string }) {
-  const [qrUrl, setQrUrl] = useState<string | null>(null);
-  const [status, setStatus] = useState("disconnected");
-  const API = process.env.NEXT_PUBLIC_API_URL;
-
-  console.log("API:", API);
+export function WhatsappConnectBox({ connectionId, onConnected }) {
+  const { socket } = useSocket();
+  const [qrUrl, setQrUrl] = useState(null);
+  const [status, setStatus] = useState("checking");
 
   useEffect(() => {
-    fetch(`${API}/whatsapp/connect?telegramId=${telegramId}`, {
-      method: "POST",
-    });
+    apiFetch(`/whatsapp/status?connectionId=${connectionId}`)
+      .then((r) => r.json())
+      .then((s) => {
+        setStatus(s.status);
+        if (s.status !== "connected") {
+          apiFetch(`/whatsapp/connect?connectionId=${connectionId}`, {
+            method: "POST",
+          });
+        }
+      });
+  }, [connectionId]);
 
-    const interval = setInterval(async () => {
-      const s = await fetch(
-        `${API}/whatsapp/status?telegramId=${telegramId}`,
-      ).then((r) => r.json());
-      setStatus(s.status);
-      if (s.status === "connected") return clearInterval(interval);
+  useEffect(() => {
+    if (!socket || !connectionId) return;
+    socket.emit("join", connectionId);
+    const onQr = (data) => {
+      console.log("QR recibido:", data);
+      if (data.connectionId === connectionId) setQrUrl(data.qr);
+    };
+    const onStatus = (data) => {
+      console.log("Estado de WhatsApp recibido:", data);
+      if (data.connectionId === connectionId) setStatus(data.status);
+    };
+    socket.on("whatsapp:qr", onQr);
+    socket.on("whatsapp:status", onStatus);
+    return () => {
+      socket.off("whatsapp:qr", onQr);
+      socket.off("whatsapp:status", onStatus);
+    };
+  }, [socket, connectionId]);
 
-      const res = await fetch(`${API}/whatsapp/qr?telegramId=${telegramId}`);
-      if (res.ok) setQrUrl(URL.createObjectURL(await res.blob()));
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [telegramId]);
+  useEffect(() => {
+    if (status === "connected") {
+      const t = setTimeout(() => onConnected?.(), 1200);
+      return () => clearTimeout(t);
+    }
+  }, [status, onConnected]);
 
   return (
     <div className="mx-auto flex h-48 w-48 items-center justify-center rounded-xl border border-neutral-200 bg-neutral-50">
