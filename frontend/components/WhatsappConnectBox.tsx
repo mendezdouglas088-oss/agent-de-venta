@@ -1,44 +1,36 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { QrCode } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { useSocket } from "@/contexts/SocketContext";
 
 export function WhatsappConnectBox({ connectionId, onConnected }) {
-  const { socket } = useSocket();
-  const [qrUrl, setQrUrl] = useState(null);
-  const [status, setStatus] = useState("checking");
+  const { socket, whatsappState } = useSocket();
+  const conn = whatsappState[connectionId] || {};
+  const qrUrl = conn.qr ?? null;
+  const status = conn.status ?? "checking";
 
   useEffect(() => {
-    apiFetch(`/whatsapp/status?connectionId=${connectionId}`)
+    if (!connectionId) return;
+    // si ya hay qr/status guardado (context sobrevivió la navegación), no reinicies la conexión
+    if (whatsappState[connectionId]) return;
+
+    apiFetch(`/whatsapp/status?telegramId=${connectionId}`)
       .then((r) => r.json())
       .then((s) => {
-        setStatus(s.status);
         if (s.status !== "connected") {
-          apiFetch(`/whatsapp/connect?connectionId=${connectionId}`, {
+          apiFetch(`/whatsapp/connect?telegramId=${connectionId}`, {
             method: "POST",
           });
         }
       });
+    // whatsappState fuera de deps a propósito: solo queremos chequear el valor al montar
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [connectionId]);
 
   useEffect(() => {
     if (!socket || !connectionId) return;
     socket.emit("join", connectionId);
-    const onQr = (data) => {
-      console.log("QR recibido:", data);
-      if (data.connectionId === connectionId) setQrUrl(data.qr);
-    };
-    const onStatus = (data) => {
-      console.log("Estado de WhatsApp recibido:", data);
-      if (data.connectionId === connectionId) setStatus(data.status);
-    };
-    socket.on("whatsapp:qr", onQr);
-    socket.on("whatsapp:status", onStatus);
-    return () => {
-      socket.off("whatsapp:qr", onQr);
-      socket.off("whatsapp:status", onStatus);
-    };
   }, [socket, connectionId]);
 
   useEffect(() => {

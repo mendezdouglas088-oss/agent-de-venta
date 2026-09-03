@@ -9,6 +9,7 @@ export function SocketProvider({ children }) {
   const socketRef = useRef(null);
   const [socket, setSocket] = useState(null);
   const [pendingAttention, setPendingAttention] = useState(false);
+  const [whatsappState, setWhatsappState] = useState({}); // { [connectionId]: { qr, status } }
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
@@ -30,8 +31,27 @@ export function SocketProvider({ children }) {
     const markPending = () => {
       if (window.location.pathname !== "/inbox") setPendingAttention(true);
     };
-    s.on("whatsapp:qr", markPending);
+
+    s.on("whatsapp:qr", (data) => {
+      setWhatsappState((prev) => ({
+        ...prev,
+        [data.connectionId]: {
+          ...prev[data.connectionId],
+          qr: data.qr,
+          status: "qr",
+        },
+      }));
+      markPending();
+    });
+
     s.on("whatsapp:status", (data) => {
+      setWhatsappState((prev) => ({
+        ...prev,
+        [data.connectionId]: {
+          ...prev[data.connectionId],
+          status: data.status,
+        },
+      }));
       if (data.status !== "connected") markPending();
     });
 
@@ -44,6 +64,7 @@ export function SocketProvider({ children }) {
         socket,
         pendingAttention,
         clearPendingAttention: () => setPendingAttention(false),
+        whatsappState,
       }}
     >
       {children}

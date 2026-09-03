@@ -210,7 +210,7 @@ export class WhatsappWebProvider
     const client = new Client({
       authStrategy: new LocalAuth({ clientId: sessionId }),
       puppeteer: {
-        headless: false,
+        headless: true,
         protocolTimeout: 300000, // 5 min, en vez del default 180s
         args: [
           '--disable-dev-shm-usage',

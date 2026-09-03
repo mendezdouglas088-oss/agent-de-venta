@@ -805,7 +805,7 @@ function SelectUserModal({ accounts, onClose, onSelectAccount }) {
   );
 }
 
-function WhatsAppQRModal({ accountId, onClose }) {
+function WhatsAppQRModal({ connectingAccountId, onClose }) {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/40 p-4"
@@ -827,8 +827,11 @@ function WhatsAppQRModal({ accountId, onClose }) {
             <X className="h-4 w-4" />
           </button>
         </div>
-        {accountId ? (
-          <WhatsappConnectBox connectionId={accountId} onConnected={onClose} />
+        {connectingAccountId ? (
+          <WhatsappConnectBox
+            connectionId={connectingAccountId}
+            onConnected={onClose}
+          />
         ) : (
           <p className="text-sm text-neutral-500">No account selected.</p>
         )}
@@ -935,16 +938,12 @@ export default function CRMInboxDashboard() {
   const [toast, setToast] = useState("");
   const [showConnectionModal, setShowConnectionModal] = useState(false);
   const [showSelectUserModal, setShowSelectUserModal] = useState(false);
-  const { socket, clearPendingAttention } = useSocket();
+  const { socket, clearPendingAttention, whatsappState } = useSocket();
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [showWhatsAppQR, setShowWhatsAppQR] = useState(false);
   const [showTelegramForm, setShowTelegramForm] = useState(false);
   const [groups, setGroups] = useState([]);
   const [accounts, setAccounts] = useState([]);
-
-  useEffect(() => {
-    clearPendingAttention();
-  }, []);
 
   function fetchAccounts() {
     apiFetch("/whatsapp-connections")
@@ -953,6 +952,7 @@ export default function CRMInboxDashboard() {
         const mapped = (Array.isArray(data) ? data : []).map((a) => ({
           id: a.id,
           name: a.nameUserConnected,
+          connectionId: a.connectionId,
         }));
         setAccounts(mapped);
       })
@@ -1083,6 +1083,17 @@ export default function CRMInboxDashboard() {
   }, [socket]);
 
   useEffect(() => {
+    const pending = Object.entries(whatsappState).find(
+      ([, v]) => v.status === "qr",
+    );
+    if (pending) {
+      const [connectionId] = pending;
+      setConnectingAccountId(connectionId);
+      setShowWhatsAppQR(true);
+    }
+  }, [whatsappState]);
+
+  useEffect(() => {
     clearPendingAttention(); // apaga el parpadeo del ícono al entrar a Inbox
   }, []);
 
@@ -1122,7 +1133,7 @@ export default function CRMInboxDashboard() {
                   if (accounts.length > 1) {
                     setShowSelectUserModal(true);
                   } else {
-                    setConnectingAccountId(accounts[0]?.id ?? null);
+                    setConnectingAccountId(accounts[0]?.connectionId ?? null);
                     setShowConnectionModal(true);
                   }
                 }}
@@ -1655,7 +1666,7 @@ export default function CRMInboxDashboard() {
 
       {showWhatsAppQR && (
         <WhatsAppQRModal
-          accountId={connectingAccountId}
+          connectingAccountId={connectingAccountId}
           onClose={() => setShowWhatsAppQR(false)}
         />
       )}

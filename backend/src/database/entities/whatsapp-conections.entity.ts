@@ -29,6 +29,11 @@ export class WhatsappConnections {
   @Column({ nullable: true })
   userId: string;
 
+  // este sera el id de la conexion de whatsapp, que se genera en el backend y se
+  // envia al frontend para que el usuario pueda escanear el QR y conectarse a su cuenta de whatsapp
+  @Column({ nullable: true })
+  connectionId: string;
+
   @OneToMany(
     () => WhatsappGroup,
     (whatsappGroup) => whatsappGroup.whatsappConnection,

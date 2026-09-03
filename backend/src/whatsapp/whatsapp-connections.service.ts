@@ -17,21 +17,25 @@ export class WhatsappConnectionsService {
     userId: string;
     nameUserConnected: string;
   }) {
-    const whatConnection = await this.findAllByUserID(data.userId);
-    const res: { nameUserConnected: string; userId: string } = {
+    const connections = await this.findAllByUserID(data.userId);
+
+    const connectionId = Math.floor(
+      100000000 + Math.random() * 900000000,
+    ).toString();
+
+    const connection = this.repo.create({
       userId: data.userId,
-      nameUserConnected: data.fullName,
-    };
-    if (whatConnection.length > 0) {
-      res['nameUserConnected'] = data.nameUserConnected;
-    }
-    const resObj = this.repo.create(res);
-    return this.repo.save(resObj);
+      nameUserConnected:
+        connections.length > 0 ? data.nameUserConnected : data.fullName,
+      connectionId,
+    });
+
+    return await this.repo.save(connection);
   }
 
   async belongsToUser(connectionId: string, userId: string): Promise<boolean> {
     const connection = await this.repo.findOne({
-      where: { id: connectionId, userId },
+      where: { connectionId: connectionId, userId },
     });
     return !!connection;
   }
