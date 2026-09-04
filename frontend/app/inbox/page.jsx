@@ -965,7 +965,7 @@ export default function CRMInboxDashboard() {
 
   const [selectedAccountId, setSelectedAccountId] = useState(null);
   const effectiveAccountId =
-    selectedAccountId ?? (accounts[0] ? accounts[0].id : null);
+    selectedAccountId ?? (accounts[0] ? accounts[0].connectionId : null);
 
   useEffect(() => {
     if (!effectiveAccountId) return;

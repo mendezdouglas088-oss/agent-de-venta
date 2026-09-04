@@ -20,7 +20,7 @@ export class WhatsappGroupService {
   /**
    * Sincroniza grupos de WhatsApp en BD.
    * @param listGroups Lista de grupos obtenidos de whatsapp-web.js
-   * @param telegramId telegramId del usuario dueño (se convierte a UUID internamente)
+   * @param whatsappConnectionId ID de la conexión de WhatsApp a la que pertenecen los grupos
    */
   async create(
     groups: WhatsappGroupInterface[],

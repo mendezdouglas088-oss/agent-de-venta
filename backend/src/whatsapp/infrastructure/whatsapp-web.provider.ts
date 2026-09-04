@@ -165,16 +165,34 @@ export class WhatsappWebProvider
   async getChats(sessionId: string): Promise<WhatsappChatSummary[]> {
     const client = this.getClient(sessionId);
     if (!client) throw new Error('WhatsApp no está conectado');
-    const chats = await client.getChats();
-    return chats
-      .filter((c) => !c.isGroup)
-      .map((c) => ({
-        chatId: c.id._serialized,
-        name: c.name || c.id.user,
-        lastMessage: c.lastMessage?.body,
-        lastMessageAt: c.lastMessage?.timestamp,
-        unreadCount: c.unreadCount,
-      }));
+
+    const state = await client.getState().catch(() => null);
+    if (state !== 'CONNECTED') {
+      throw new Error(
+        `WhatsApp no está listo (estado: ${state ?? 'desconocido'})`,
+      );
+    }
+
+    try {
+      const chats = await client.getChats();
+      return chats
+        .filter((c) => !c.isGroup)
+        .map((c) => ({
+          chatId: c.id._serialized,
+          name: c.name || c.id.user,
+          lastMessage: c.lastMessage?.body,
+          lastMessageAt: c.lastMessage?.timestamp,
+          unreadCount: c.unreadCount,
+        }));
+    } catch (err) {
+      console.log('getChats error', err);
+      this.logger.error(
+        `getChats falló para ${sessionId}: ${err?.message || err}`,
+      );
+      throw new Error(
+        'No se pudieron obtener los chats de WhatsApp, intenta de nuevo',
+      );
+    }
   }
 
   // ── privado: nada de esto sale del módulo ──────────────────
@@ -210,7 +228,7 @@ export class WhatsappWebProvider
     const client = new Client({
       authStrategy: new LocalAuth({ clientId: sessionId }),
       puppeteer: {
-        headless: true,
+        headless: false,
         protocolTimeout: 300000, // 5 min, en vez del default 180s
         args: [
           '--disable-dev-shm-usage',

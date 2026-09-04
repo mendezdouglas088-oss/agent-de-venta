@@ -26,20 +26,23 @@ export class WhatsappController {
   ) {}
 
   @Post('connect')
-  async connect(@Query('telegramId') telegramId: string) {
-    await this.provider.connect(telegramId);
-    return { status: this.provider.getStatus(telegramId) };
+  async connect(@Query('connectionId') connectionId: string) {
+    await this.provider.connect(connectionId);
+    return { status: this.provider.getStatus(connectionId) };
   }
 
   @Get('qr')
-  async getQr(@Query('telegramId') telegramId: string, @Res() res: Response) {
-    const status = this.provider.getStatus(telegramId);
+  async getQr(
+    @Query('connectionId') connectionId: string,
+    @Res() res: Response,
+  ) {
+    const status = this.provider.getStatus(connectionId);
 
     if (['disconnected', 'error', 'auth_failed'].includes(status)) {
-      await this.provider.connect(telegramId); // crea la sesión si no existe
+      await this.provider.connect(connectionId); // crea la sesión si no existe
     }
 
-    const qr = await this.provider.getQr(telegramId);
+    const qr = await this.provider.getQr(connectionId);
     if (!qr) {
       res
         .status(202)
@@ -50,26 +53,26 @@ export class WhatsappController {
   }
 
   @Get('chats')
-  async getChats(@Query('telegramId') telegramId: string) {
-    return this.provider.getChats(telegramId);
+  async getChats(@Query('connectionId') connectionId: string) {
+    return this.provider.getChats(connectionId);
   }
 
   @Post('logout')
-  async logout(@Query('telegramId') telegramId: string) {
-    await this.provider.logout(telegramId);
+  async logout(@Query('connectionId') connectionId: string) {
+    await this.provider.logout(connectionId);
     return { status: 'disconnected' };
   }
 
   @Get('status')
-  getStatus(@Query('telegramId') telegramId: string) {
-    const status = this.provider.getStatus(telegramId ?? '');
+  getStatus(@Query('connectionId') connectionId: string) {
+    const status = this.provider.getStatus(connectionId ?? '');
     return { status };
   }
 
   @Get('update-groups')
-  async updateGroups(@Query('telegramId') telegramId: string) {
-    const groups = await this.provider.getGroups(telegramId ?? '');
-    await this.whatsappGroupService.create(groups, telegramId);
+  async updateGroups(@Query('connectionId') connectionId: string) {
+    const groups = await this.provider.getGroups(connectionId ?? '');
+    await this.whatsappGroupService.create(groups, connectionId);
     return groups;
   }
 
@@ -87,10 +90,10 @@ export class WhatsappController {
 
   @Post('send')
   async sendMessage(
-    @Body() body: { telegramId: string; groupId: string; message: string },
+    @Body() body: { connectionId: string; groupId: string; message: string },
   ) {
     return await this.provider.sendText(
-      body.telegramId,
+      body.connectionId,
       body.groupId,
       body.message,
     );
@@ -100,14 +103,14 @@ export class WhatsappController {
   async sendImage(
     @Body()
     body: {
-      telegramId: string;
+      connectionId: string;
       groupId: string;
       imageUrls: string[];
       caption?: string;
     },
   ) {
     return await this.provider.sendImages(
-      body.telegramId,
+      body.connectionId,
       body.groupId,
       body.imageUrls,
       body.caption,

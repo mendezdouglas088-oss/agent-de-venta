@@ -15,11 +15,11 @@ export function WhatsappConnectBox({ connectionId, onConnected }) {
     // si ya hay qr/status guardado (context sobrevivió la navegación), no reinicies la conexión
     if (whatsappState[connectionId]) return;
 
-    apiFetch(`/whatsapp/status?telegramId=${connectionId}`)
+    apiFetch(`/whatsapp/status?connectionId=${connectionId}`)
       .then((r) => r.json())
       .then((s) => {
         if (s.status !== "connected") {
-          apiFetch(`/whatsapp/connect?telegramId=${connectionId}`, {
+          apiFetch(`/whatsapp/connect?connectionId=${connectionId}`, {
             method: "POST",
           });
         }
