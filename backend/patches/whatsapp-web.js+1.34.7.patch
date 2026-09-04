@@ -1,0 +1,162 @@
+diff --git a/node_modules/whatsapp-web.js/src/util/Injected/Utils.js b/node_modules/whatsapp-web.js/src/util/Injected/Utils.js
+index 540078a..8d710a7 100644
+--- a/node_modules/whatsapp-web.js/src/util/Injected/Utils.js
++++ b/node_modules/whatsapp-web.js/src/util/Injected/Utils.js
+@@ -582,7 +582,7 @@ exports.LoadUtils = () => {
+ 
+         return window
+             .require('WAWebCollections')
+-            .Msg.get(newMsgKey._serialized);
++            .Msg.get(window.WWebJS.getMsgKeyId(newMsgKey));
+     };
+ 
+     window.WWebJS.editMessage = async (msg, content, options = {}) => {
+@@ -625,7 +625,9 @@ exports.LoadUtils = () => {
+         await window
+             .require('WAWebSendMessageEditAction')
+             .sendMessageEdit(msg, content, internalOptions);
+-        return window.require('WAWebCollections').Msg.get(msg.id._serialized);
++        return window
++            .require('WAWebCollections')
++            .Msg.get(window.WWebJS.getMsgKeyId(msg.id));
+     };
+ 
+     window.WWebJS.toStickerData = async (mediaInfo) => {
+@@ -917,12 +919,33 @@ exports.LoadUtils = () => {
+         };
+     };
+ 
++    /**
++     * The serialized id of a message key, tolerating WhatsApp Web having renamed the key's
++     * `_serialized` property to `$1`. Reading the old name now returns `undefined`, which reaches
++     * IndexedDB as a `.get(undefined)` and throws
++     * `DataError: Failed to execute 'get' on 'IDBObjectStore': No key or key range specified.`
++     * `_serialized` is preferred so nothing changes wherever it is still present (chat ids, for
++     * example, are unaffected by the rename). Returns undefined when neither exists, so callers can
++     * skip the lookup instead of querying a store with a nullish key.
++     * @param {Object} key a message key, e.g. `chat.lastReceivedKey` or a raw `msg.id`
++     * @returns {string|undefined}
++     */
++    window.WWebJS.getMsgKeyId = (key) =>
++        key?._serialized ?? key?.$1 ?? undefined;
++
+     window.WWebJS.getChats = async () => {
+         const chats = window.require('WAWebCollections').Chat.getModelsArray();
+-        const chatPromises = chats.map((chat) =>
+-            window.WWebJS.getChatModel(chat),
+-        );
+-        return await Promise.all(chatPromises);
++        const results = [];
++        for (const chat of chats) {
++            try {
++                const model = await window.WWebJS.getChatModel(chat);
++                if (model) results.push(model);
++            } catch {
++                // salta chats que fallan al serializar (ids LID, etc.)
++                continue;
++            }
++        }
++        return results;
+     };
+ 
+     window.WWebJS.getChannels = async () => {
+@@ -957,7 +980,11 @@ exports.LoadUtils = () => {
+             const groupMetadata =
+                 window.require('WAWebCollections').GroupMetadata ||
+                 window.require('WAWebCollections').WAWebGroupMetadataCollection;
+-            await groupMetadata.update(chatWid);
++            try {
++                await groupMetadata.update(chatWid);
++            } catch {
++                model.groupMetadata = null;
++            }
+             const { toPn } = window.require('WAWebLidMigrationUtils');
+             const serializedMetadata = chat.groupMetadata.serialize();
+             for (const p of serializedMetadata.participants || []) {
+@@ -981,16 +1008,17 @@ exports.LoadUtils = () => {
+ 
+         model.lastMessage = null;
+         if (model.msgs && model.msgs.length) {
+-            const lastMessage = chat.lastReceivedKey
++            const lastReceivedKeyId = window.WWebJS.getMsgKeyId(
++                chat.lastReceivedKey,
++            );
++            const lastMessage = lastReceivedKeyId
+                 ? window
+                       .require('WAWebCollections')
+-                      .Msg.get(chat.lastReceivedKey._serialized) ||
++                      .Msg.get(lastReceivedKeyId) ||
+                   (
+                       await window
+                           .require('WAWebCollections')
+-                          .Msg.getMessagesById([
+-                              chat.lastReceivedKey._serialized,
+-                          ])
++                          .Msg.getMessagesById([lastReceivedKeyId])
+                   )?.messages?.[0]
+                 : null;
+             lastMessage &&
+@@ -1105,6 +1133,63 @@ exports.LoadUtils = () => {
+         });
+     };
+ 
++    /**
++     * Resolves the media blob and metadata for a message.
++     * Shared by downloadMedia and downloadMediaStream.
++     * @param {string} msgId
++     * @returns {Promise<{blob: Blob, mimetype: string, filename: string, filesize: number}|null>}
++     */
++    window.WWebJS.resolveMediaBlob = async (msgId) => {
++        const { Msg } = window.require('WAWebCollections');
++        const msg =
++            Msg.get(msgId) ||
++            (await Msg.getMessagesById([msgId]))?.messages?.[0];
++
++        if (
++            !msg ||
++            !msg.mediaData ||
++            msg.mediaData.mediaStage === 'REUPLOADING'
++        ) {
++            return null;
++        }
++
++        // Always call internal downloadMedia - never skip based on
++        // mediaStage, because cache eviction can leave stage=RESOLVED
++        // with empty InMemoryMediaBlobCache.
++        await msg.downloadMedia({
++            downloadEvenIfExpensive: true,
++            rmrReason: 1,
++            isUserInitiated: true,
++        });
++
++        if (
++            msg.mediaData.mediaStage.includes('ERROR') ||
++            msg.mediaData.mediaStage === 'FETCHING'
++        ) {
++            return null;
++        }
++
++        const cached = window
++            .require('WAWebMediaInMemoryBlobCache')
++            .InMemoryMediaBlobCache.get(msg.mediaObject?.filehash);
++
++        let blob;
++        if (cached) {
++            blob = cached;
++        } else if (msg.mediaObject?.mediaBlob) {
++            blob = msg.mediaObject.mediaBlob.forceToBlob();
++        }
++
++        if (!blob) return null;
++
++        return {
++            blob,
++            mimetype: msg.mimetype,
++            filename: msg.filename,
++            filesize: msg.size,
++        };
++    };
++
+     window.WWebJS.arrayBufferToBase64 = (arrayBuffer) => {
+         let binary = '';
+         const bytes = new Uint8Array(arrayBuffer);
