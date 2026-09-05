@@ -8,18 +8,22 @@ import { Plan } from './plan.entity';
 import { UserPlan } from './user-plan.entity';
 import { Transfer } from './transfer.entity';
 import { WhatsappConnections } from './whatsapp-conections.entity';
+import { WhatsappChat } from './whatsapp-chat.entity';
+import { WhatsappMessage } from './whatsapp-message.entity';
 
 export const entities = [
   Product,
   Config,
   TelegramGroup,
-  WhatsappGroup,
   Publication,
   User,
   Plan,
   UserPlan,
   Transfer,
   WhatsappConnections,
+  WhatsappGroup,
+  WhatsappChat,
+  WhatsappMessage,
 ];
 
 export { Plan, PlanType, PLAN_CONFIGS } from './plan.entity';

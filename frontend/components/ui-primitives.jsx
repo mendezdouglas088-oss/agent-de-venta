@@ -37,7 +37,7 @@ export function RailIcon({
   active = false,
   onClick,
   label,
-  pulse = false, // ← nuevo
+  pulse = false,
 }) {
   const toneClasses =
     tone === "brand"

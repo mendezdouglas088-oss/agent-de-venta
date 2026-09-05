@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { WhatsappGroup } from 'src/database/entities/whatsapp-group.entity';
 import { Repository } from 'typeorm';
 import { UsersService } from 'src/users/users.service';
-import { WhatsappGroupInterface } from './domain/whatsapp-provider.interface';
+import { WhatsappGroupInterface } from '../domain/whatsapp-provider.interface';
 import { WhatsappConnections } from 'src/database/entities/whatsapp-conections.entity';
 import { WhatsappConnectionsService } from './whatsapp-connections.service';
 

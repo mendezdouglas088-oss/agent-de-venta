@@ -196,7 +196,7 @@ export class WhatsappWebProvider
   }
 
   // ── privado: nada de esto sale del módulo ──────────────────
-  private getClient(sessionId: string): Client | null {
+  getClient(sessionId: string): Client | null {
     const session = this.sessions.get(sessionId);
     return session?.status === 'connected' ? session.client : null;
   }
@@ -223,7 +223,6 @@ export class WhatsappWebProvider
   }
 
   private async initClientForUser(sessionId: string): Promise<void> {
-    console.log('iniciando cliente para', sessionId);
     const session = this.sessions.get(sessionId)!;
     const client = new Client({
       authStrategy: new LocalAuth({ clientId: sessionId }),
@@ -271,7 +270,7 @@ export class WhatsappWebProvider
       this.logger.log(`[${sessionId}] AUTHENTICATED`);
     });
 
-    client.on('disconnected', (reason) => {
+    client.on('disconnected', async (reason) => {
       this.logger.warn(`[${sessionId}] DISCONNECTED: ${reason}`);
       session.status = 'disconnected';
       this.eventEmitter.emit('whatsapp.status', {
@@ -291,7 +290,25 @@ export class WhatsappWebProvider
     });
 
     client.on('message', async (msg) => {
+      const chat = await msg.getChat();
+      if (chat.isGroup) return; // getChats/syncAll tampoco trackean grupos
+      console.log('Mensaje recibido en', msg.id);
+      // evento nuevo, para persistir en DB + avisar por socket
+      this.eventEmitter.emit('whatsapp.message.persist', {
+        sessionId,
+        chatId: chat.id._serialized,
+        chatName: chat.name || chat.id.user,
+        messageId: msg.id.id,
+        fromMe: msg.fromMe,
+        body: msg.body,
+        timestamp: msg.timestamp,
+        ack: msg.ack,
+        unreadCount: chat.unreadCount,
+      });
+
       if (msg.fromMe) return;
+
+      // este evento lo dejo tal cual estaba — asumo que RealtimeGateway ya lo escucha para el chat list en vivo
       const contact = await msg.getContact();
       this.eventEmitter.emit('whatsapp.message.received', {
         sessionId,

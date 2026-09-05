@@ -22,6 +22,7 @@ import {
 import { RailIcon } from "./ui-primitives";
 
 import { useSocket } from "@/contexts/SocketContext";
+import { apiFetch } from "@/lib/api";
 
 const NAV_ITEMS = [
   { icon: Home, label: "Dashboard", path: "/" },
@@ -39,6 +40,7 @@ export default function Sidebar({ onOpenProducts }) {
 
   function handleLogout() {
     localStorage.removeItem("isAuthenticated");
+    localStorage.removeItem("accessToken");
     router.replace("/login");
   }
 

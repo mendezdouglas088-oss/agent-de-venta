@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule as NestConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
+import { BullModule } from '@nestjs/bullmq';
+import { bullConfig } from './config/bullmq.config';
 
 import { TelegramModule } from './telegram/telegram.module';
 import { OllamaModule } from './ollama/ollama.module';
@@ -20,6 +22,7 @@ import { AuthModule } from './auth/auth.module';
 @Module({
   imports: [
     NestConfigModule.forRoot({ isGlobal: true }),
+    BullModule.forRoot(bullConfig),
     EventEmitterModule.forRoot(),
     ScheduleModule.forRoot(),
     databaseConfig,

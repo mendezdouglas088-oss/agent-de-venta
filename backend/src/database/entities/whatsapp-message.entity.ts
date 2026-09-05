@@ -7,7 +7,7 @@ import {
   Unique,
 } from 'typeorm';
 
-@Entity()
+@Entity({ name: 'whatsapp_messages' })
 @Unique(['sessionId', 'messageId'])
 @Index(['sessionId', 'chatId'])
 export class WhatsappMessage {

@@ -1,6 +1,6 @@
 import { Column, Entity, PrimaryGeneratedColumn, Unique } from 'typeorm';
 
-@Entity()
+@Entity({ name: 'whatsapp_chats' })
 @Unique(['sessionId', 'chatId'])
 export class WhatsappChat {
   @PrimaryGeneratedColumn('uuid') id: string;
