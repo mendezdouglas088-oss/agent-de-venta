@@ -1,3 +1,5 @@
+import { Client } from 'whatsapp-web.js';
+
 export type WhatsappConnectionStatus =
   | 'disconnected'
   | 'connecting'
@@ -42,6 +44,7 @@ export interface WhatsappProvider {
   getStatus(sessionId: string): WhatsappConnectionStatus;
   isConnected(sessionId: string): boolean;
   getGroups(sessionId: string): Promise<WhatsappGroupInterface[]>;
+  getClient(sessionId: string): Client | null;
   sendText(
     sessionId: string,
     groupId: string,

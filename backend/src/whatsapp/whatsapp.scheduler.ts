@@ -7,7 +7,7 @@ import {
   WhatsappProvider,
 } from './domain/whatsapp-provider.interface';
 import { UsersService } from 'src/users/users.service';
-import { WhatsappGroupService } from './whatsapp-group.service';
+import { WhatsappGroupService } from './services/whatsapp-group.service';
 
 /**
  * Sincroniza grupos de WhatsApp para TODOS los usuarios conectados.

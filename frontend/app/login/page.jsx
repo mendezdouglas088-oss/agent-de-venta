@@ -33,7 +33,7 @@ export default function LoginPage() {
 
       const data = await res.json();
       localStorage.setItem("accessToken", data.accessToken);
-      localStorage.setItem("isAuthenticated", "true"); // por si algo más en la app todavía lo lee
+      localStorage.setItem("isAuthenticated", "true");
       router.replace("/");
     } catch {
       setError("No se pudo conectar con el servidor.");

@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, UseGuards, Req } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { WhatsappConnectionsService } from './whatsapp-connections.service';
+import { WhatsappConnectionsService } from '../services/whatsapp-connections.service';
 
 @UseGuards(JwtAuthGuard)
 @Controller('whatsapp-connections')

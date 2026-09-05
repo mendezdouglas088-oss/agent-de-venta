@@ -9,7 +9,7 @@ import {
 import { OnEvent } from '@nestjs/event-emitter';
 import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
-import { WhatsappConnectionsService } from 'src/whatsapp/whatsapp-connections.service';
+import { WhatsappConnectionsService } from 'src/whatsapp/services/whatsapp-connections.service';
 
 @WebSocketGateway({ cors: { origin: process.env.FRONTEND_DOMAIN } })
 export class RealtimeGateway implements OnGatewayConnection {
@@ -28,6 +28,19 @@ export class RealtimeGateway implements OnGatewayConnection {
     } catch {
       client.disconnect(); // sin token válido, ni se conecta
     }
+  }
+  emitNewMessages(
+    sessionId: string,
+    chatId: string,
+    newCount: number,
+    unreadTotal: number,
+  ) {
+    this.server
+      .to(sessionId)
+      .emit('whatsapp:new-messages', { sessionId, chatId, newCount });
+    this.server
+      .to(sessionId)
+      .emit('whatsapp:unread-total', { sessionId, total: unreadTotal });
   }
 
   @SubscribeMessage('join')
@@ -57,7 +70,6 @@ export class RealtimeGateway implements OnGatewayConnection {
   }
   @OnEvent('whatsapp.qr')
   handleQr(payload: { connectionId: string; qr: string }) {
-    console.log('Emitiendo whatsapp:qr a la sala', payload.connectionId);
     this.server.to(payload.connectionId).emit('whatsapp:qr', payload);
   }
 

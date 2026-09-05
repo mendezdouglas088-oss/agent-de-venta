@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { WhatsappGroup } from 'src/database/entities/whatsapp-group.entity';
 import { Repository } from 'typeorm';
 import { UsersService } from 'src/users/users.service';
-import { WhatsappGroupInterface } from './domain/whatsapp-provider.interface';
+import { WhatsappGroupInterface } from '../domain/whatsapp-provider.interface';
 import { WhatsappConnections } from 'src/database/entities/whatsapp-conections.entity';
 import { WhatsappConnectionsService } from './whatsapp-connections.service';
 
@@ -20,7 +20,7 @@ export class WhatsappGroupService {
   /**
    * Sincroniza grupos de WhatsApp en BD.
    * @param listGroups Lista de grupos obtenidos de whatsapp-web.js
-   * @param telegramId telegramId del usuario dueño (se convierte a UUID internamente)
+   * @param whatsappConnectionId ID de la conexión de WhatsApp a la que pertenecen los grupos
    */
   async create(
     groups: WhatsappGroupInterface[],
