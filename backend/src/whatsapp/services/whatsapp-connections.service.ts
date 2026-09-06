@@ -19,9 +19,16 @@ export class WhatsappConnectionsService {
   }) {
     const connections = await this.findAllByUserID(data.userId);
 
-    const connectionId = Math.floor(
-      100000000 + Math.random() * 900000000,
-    ).toString();
+    let connectionId: string;
+    let existingConnection;
+
+    do {
+      connectionId = Math.floor(
+        100000000 + Math.random() * 900000000,
+      ).toString();
+
+      existingConnection = await this.findByConnectionId(connectionId);
+    } while (existingConnection);
 
     const connection = this.repo.create({
       userId: data.userId,
@@ -30,7 +37,7 @@ export class WhatsappConnectionsService {
       connectionId,
     });
 
-    return await this.repo.save(connection);
+    return this.repo.save(connection);
   }
 
   async belongsToUser(connectionId: string, userId: string): Promise<boolean> {
@@ -49,5 +56,13 @@ export class WhatsappConnectionsService {
 
   async findAllByUser(userId: string) {
     return this.repo.find({ where: { userId } });
+  }
+
+  async findByConnectionId(
+    connectionId: string,
+  ): Promise<WhatsappConnections | null> {
+    return this.repo.findOne({
+      where: { connectionId },
+    });
   }
 }

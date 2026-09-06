@@ -19,18 +19,15 @@ import { WhatsappConnections } from './whatsapp-conections.entity';
  */
 @Entity('whatsapp_groups')
 export class WhatsappGroup {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  @PrimaryGeneratedColumn('uuid') id: string;
 
   @Index({ unique: true })
   @Column()
   whatsappGroupId: string; // Se guarda completo: "120363411776880220@g.us"
 
-  @Column()
-  title: string;
+  @Column() title: string;
 
-  @Column({ default: false })
-  publishEnabled: boolean;
+  @Column({ default: false }) publishEnabled: boolean;
 
   @ManyToOne(
     () => WhatsappConnections,
@@ -43,12 +40,15 @@ export class WhatsappGroup {
   @JoinColumn({ name: 'whatsappConnectionId' })
   whatsappConnection: WhatsappConnections;
 
-  @Column({ nullable: true })
-  whatsappConnectionId: string;
+  @Column({ nullable: true }) whatsappConnectionId: string;
 
-  @CreateDateColumn()
-  createdAt: Date;
+  // agregar estas columnas a la clase WhatsappGroup
+  @Column({ type: 'text', nullable: true }) lastMessage: string;
+  @Column({ type: 'bigint', nullable: true }) lastMessageAt: number;
+  @Column({ default: 0 }) unreadCount: number;
+  @Column({ nullable: true }) participantsCount: number;
 
-  @UpdateDateColumn()
-  updatedAt: Date;
+  @CreateDateColumn() createdAt: Date;
+
+  @UpdateDateColumn() updatedAt: Date;
 }

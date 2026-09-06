@@ -9,6 +9,8 @@ import {
   WhatsappChatSummary,
   WhatsappProvider,
 } from '../domain/whatsapp-provider.interface';
+import { WhatsappGroup } from 'src/database/entities/whatsapp-group.entity';
+import { WhatsappConnectionsService } from '../services/whatsapp-connections.service';
 
 @Injectable()
 export class WhatsappSyncService {
@@ -22,26 +24,87 @@ export class WhatsappSyncService {
     @Inject(WHATSAPP_PROVIDER)
     private readonly whatsappProvider: WhatsappProvider,
     private readonly gateway: RealtimeGateway, // para emitir eventos de nuevos mensajes
+    @InjectRepository(WhatsappGroup)
+    private readonly groupRepo: Repository<WhatsappGroup>,
+    private readonly whatsappConnectionsService: WhatsappConnectionsService,
   ) {}
 
   async syncAll(sessionId: string) {
-    const chats: WhatsappChatSummary[] =
-      await this.whatsappProvider.getChats(sessionId);
+    const allChats = await this.whatsappProvider.getAllChats(sessionId);
 
-    for (const c of chats) {
-      await this.chatRepo.upsert(
-        [
+    const chatIds = allChats.filter((c) => !c.isGroup).map((c) => c.chatId);
+    const groupIds = allChats.filter((c) => c.isGroup).map((c) => c.chatId);
+
+    const existingChatIds = new Set(
+      (chatIds.length
+        ? await this.chatRepo.find({
+            where: { sessionId, chatId: In(chatIds) },
+            select: ['chatId'],
+          })
+        : []
+      ).map((c) => c.chatId),
+    );
+    const existingGroupIds = new Set(
+      (groupIds.length
+        ? await this.groupRepo.find({
+            where: { whatsappGroupId: In(groupIds) },
+            select: ['whatsappGroupId'],
+          })
+        : []
+      ).map((g) => g.whatsappGroupId),
+    );
+
+    const connection =
+      await this.whatsappConnectionsService.findByConnectionId(sessionId);
+    const whatsappConnectionId = connection?.id ?? null;
+
+    for (const c of allChats) {
+      const isNew = c.isGroup
+        ? !existingGroupIds.has(c.chatId)
+        : !existingChatIds.has(c.chatId);
+
+      if (c.isGroup) {
+        await this.groupRepo.upsert(
           {
-            sessionId,
-            chatId: c.chatId,
-            name: c.name,
+            whatsappGroupId: c.chatId,
+            title: c.name,
             lastMessage: c.lastMessage,
             lastMessageAt: c.lastMessageAt,
             unreadCount: c.unreadCount,
+            participantsCount: c.participantsCount,
+            whatsappConnectionId,
           },
-        ],
-        ['sessionId', 'chatId'],
-      );
+          ['whatsappGroupId'],
+        );
+        if (isNew) {
+          this.gateway.emitNewGroup(sessionId, {
+            whatsappGroupId: c.chatId,
+            title: c.name,
+            unreadCount: c.unreadCount,
+          });
+        }
+      } else {
+        await this.chatRepo.upsert(
+          [
+            {
+              sessionId,
+              chatId: c.chatId,
+              name: c.name,
+              lastMessage: c.lastMessage,
+              lastMessageAt: c.lastMessageAt,
+              unreadCount: c.unreadCount,
+            },
+          ],
+          ['sessionId', 'chatId'],
+        );
+        if (isNew) {
+          this.gateway.emitNewChat(sessionId, {
+            chatId: c.chatId,
+            name: c.name,
+            unreadCount: c.unreadCount,
+          });
+        }
+      }
 
       const { newCount } = await this.syncMessagesForChat(sessionId, c.chatId);
       try {
@@ -61,7 +124,7 @@ export class WhatsappSyncService {
         }
       } catch (error) {
         console.log(
-          ` Error al emitir evento de nuevos mensajes para ${sessionId} - ${c.chatId}:`,
+          `Error al emitir evento de nuevos mensajes para ${sessionId} - ${c.chatId}:`,
           error,
         );
       }

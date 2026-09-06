@@ -13,7 +13,7 @@ export class WhatsappChatService {
   async findAll(sessionId: string): Promise<WhatsappChat[]> {
     return this.chatRepo.find({
       where: { sessionId },
-      order: { lastMessageAt: 'DESC' },
+      order: { lastMessageAt: { direction: 'DESC', nulls: 'LAST' } },
     });
   }
 

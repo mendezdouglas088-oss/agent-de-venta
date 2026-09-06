@@ -4,7 +4,6 @@ import { WhatsappGroup } from 'src/database/entities/whatsapp-group.entity';
 import { Repository } from 'typeorm';
 import { UsersService } from 'src/users/users.service';
 import { WhatsappGroupInterface } from '../domain/whatsapp-provider.interface';
-import { WhatsappConnections } from 'src/database/entities/whatsapp-conections.entity';
 import { WhatsappConnectionsService } from './whatsapp-connections.service';
 
 @Injectable()
@@ -12,26 +11,28 @@ export class WhatsappGroupService {
   constructor(
     @InjectRepository(WhatsappGroup)
     private repoWhatsappGroup: Repository<WhatsappGroup>,
-    @InjectRepository(WhatsappConnections)
-    private whatsappConnectionsService: WhatsappConnectionsService,
+    private readonly whatsappConnectionsService: WhatsappConnectionsService, // sin @InjectRepository
     private readonly usersService: UsersService,
   ) {}
 
-  /**
-   * Sincroniza grupos de WhatsApp en BD.
-   * @param listGroups Lista de grupos obtenidos de whatsapp-web.js
-   * @param whatsappConnectionId ID de la conexión de WhatsApp a la que pertenecen los grupos
-   */
-  async create(
-    groups: WhatsappGroupInterface[],
-    whatsappConnectionId?: string | null,
-  ) {
+  async create(groups: WhatsappGroupInterface[], sessionId?: string | null) {
+    let whatsappConnectionId: string | null = null;
+    if (sessionId) {
+      const connection =
+        await this.whatsappConnectionsService.findByConnectionId(sessionId);
+      whatsappConnectionId = connection?.id ?? null;
+    }
+
     for (const group of groups) {
       await this.repoWhatsappGroup.upsert(
         {
           whatsappGroupId: group.whatsappGroupId,
           title: group.title,
-          whatsappConnectionId: whatsappConnectionId || null,
+          lastMessage: group.lastMessage,
+          lastMessageAt: group.lastMessageAt,
+          unreadCount: group.unreadCount ?? 0,
+          participantsCount: group.participantsCount,
+          whatsappConnectionId,
         },
         {
           conflictPaths: ['whatsappGroupId'],

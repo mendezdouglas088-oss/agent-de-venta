@@ -11,6 +11,10 @@ export type WhatsappConnectionStatus =
 export interface WhatsappGroupInterface {
   whatsappGroupId: string;
   title: string;
+  lastMessage?: string;
+  lastMessageAt?: number;
+  unreadCount?: number;
+  participantsCount?: number;
 }
 
 export interface WhatsappConnectionsInterface {
@@ -33,9 +37,11 @@ export interface SendResultInterface {
 export interface WhatsappChatSummary {
   chatId: string;
   name: string;
+  isGroup: boolean;
   lastMessage?: string;
   lastMessageAt?: number;
   unreadCount: number;
+  participantsCount?: number;
 }
 
 export interface WhatsappProvider {
@@ -45,6 +51,7 @@ export interface WhatsappProvider {
   isConnected(sessionId: string): boolean;
   getGroups(sessionId: string): Promise<WhatsappGroupInterface[]>;
   getClient(sessionId: string): Client | null;
+  getAllChats(sessionId: string): Promise<WhatsappChatSummary[]>;
   sendText(
     sessionId: string,
     groupId: string,
