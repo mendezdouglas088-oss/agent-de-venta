@@ -15,11 +15,12 @@ export class WhatsappMessageService {
     chatId: string,
     limit: number,
   ): Promise<WhatsappMessage[]> {
-    return this.messageRepo.find({
+    const messages = this.messageRepo.find({
       where: { sessionId, chatId },
       order: { timestamp: 'DESC' },
       take: limit,
     });
+    return (await messages).reverse();
   }
 
   async markAsRead(sessionId: string, chatId: string) {

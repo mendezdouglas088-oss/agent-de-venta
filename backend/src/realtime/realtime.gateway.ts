@@ -24,7 +24,7 @@ export class RealtimeGateway implements OnGatewayConnection {
     try {
       const token = client.handshake.auth?.token;
       const payload = await this.jwtService.verifyAsync(token);
-      client.data.userId = payload.sub;
+      client.data.userId = payload.id;
     } catch {
       client.disconnect(); // sin token válido, ni se conecta
     }
@@ -41,6 +41,23 @@ export class RealtimeGateway implements OnGatewayConnection {
     this.server
       .to(sessionId)
       .emit('whatsapp:unread-total', { sessionId, total: unreadTotal });
+  }
+
+  // agregar a la clase RealtimeGateway
+  emitNewChat(
+    sessionId: string,
+    chat: { chatId: string; name: string; unreadCount: number },
+  ) {
+    this.server.to(sessionId).emit('whatsapp:new-chat', { sessionId, ...chat });
+  }
+
+  emitNewGroup(
+    sessionId: string,
+    group: { whatsappGroupId: string; title: string; unreadCount: number },
+  ) {
+    this.server
+      .to(sessionId)
+      .emit('whatsapp:new-group', { sessionId, ...group });
   }
 
   @SubscribeMessage('join')

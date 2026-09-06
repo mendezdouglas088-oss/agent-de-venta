@@ -11,7 +11,19 @@ export class WhatsappSyncQueue {
       'sync-all',
       { sessionId },
       {
-        delay: 30000,
+        attempts: 4,
+        backoff: { type: 'exponential', delay: 5000 },
+        removeOnComplete: true,
+        removeOnFail: 50,
+      },
+    );
+  }
+
+  async enqueueFullSync(sessionId: string) {
+    await this.queue.add(
+      'sync-all',
+      { sessionId },
+      {
         attempts: 4,
         backoff: { type: 'exponential', delay: 5000 },
         removeOnComplete: true,

@@ -19,7 +19,7 @@ export class JwtAuthGuard implements CanActivate {
     if (!token) throw new UnauthorizedException('Falta el token');
 
     try {
-      req.user = await this.jwtService.verifyAsync(token); // { sub, email }
+      req.user = await this.jwtService.verifyAsync(token);
       return true;
     } catch {
       throw new UnauthorizedException('Token inválido o expirado');

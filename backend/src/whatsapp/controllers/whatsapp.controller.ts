@@ -8,6 +8,8 @@ import {
   Res,
   UseGuards,
   Req,
+  DefaultValuePipe,
+  ParseIntPipe,
 } from '@nestjs/common';
 import {
   WHATSAPP_PROVIDER,
@@ -62,18 +64,16 @@ export class WhatsappController {
 
   @Get('chats')
   async getChats(@Query('connectionId') connectionId: string) {
-    // return await this.provider.getChats(connectionId);
-    await this.syncQueue.enqueueSync(connectionId);
-    // return await this.chatsService.findAll(connectionId);
-
-    return { queued: true };
+    const chats = await this.chatsService.findAll(connectionId);
+    this.syncQueue.enqueueSync(connectionId).catch(() => {}); // refresco en background, no bloquea la respuesta
+    return chats;
   }
 
   @Get('messages')
   async getMessages(
     @Query('connectionId') connectionId: string,
     @Query('chatId') chatId: string,
-    @Query('limit') limit = 50,
+    @Query('limit', new DefaultValuePipe(150), ParseIntPipe) limit: number,
   ) {
     return await this.messageService.findAll(connectionId, chatId, limit);
   }
@@ -101,6 +101,12 @@ export class WhatsappController {
     return { status };
   }
 
+  @Post('sync')
+  async syncAll(@Query('connectionId') connectionId: string) {
+    await this.syncQueue.enqueueFullSync(connectionId);
+    return { queued: true };
+  }
+
   @Get('update-groups')
   async updateGroups(@Query('connectionId') connectionId: string) {
     const groups = await this.provider.getGroups(connectionId ?? '');
@@ -120,13 +126,14 @@ export class WhatsappController {
     );
   }
 
-  @Post('send')
+  @Post('send_message')
   async sendMessage(
-    @Body() body: { connectionId: string; groupId: string; message: string },
+    @Body() body: { connectionId: string; chatId: string; message: string },
   ) {
+    console.log('sendMessage body:', body);
     return await this.provider.sendText(
       body.connectionId,
-      body.groupId,
+      body.chatId,
       body.message,
     );
   }

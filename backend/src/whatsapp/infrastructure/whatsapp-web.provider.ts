@@ -115,26 +115,32 @@ export class WhatsappWebProvider
     return this.getStatus(sessionId) === 'connected';
   }
 
-  async getGroups(sessionId: string): Promise<WhatsappGroupInterface[]> {
-    const client = this.getClient(sessionId);
-    if (!client) throw new Error('WhatsApp no está conectado');
-    const chats = await client.getChats();
-    return chats
-      .filter((c) => c.isGroup)
-      .map((c) => ({ whatsappGroupId: c.id._serialized, title: c.name }));
-  }
-
   async sendText(
-    sessionId: string,
-    groupId: string,
+    connectionId: string,
+    chatId: string,
     text: string,
   ): Promise<SendResultInterface> {
-    const client = this.getClient(sessionId);
+    console.log(
+      `sendText called with connectionId: ${connectionId}, chatId: ${chatId}, text: ${text}`,
+    );
+    const client = this.getClient(connectionId);
     if (!client) return { ok: false, error: 'WhatsApp no está conectado' };
     try {
-      await client.sendMessage(groupId, text);
-
-      // await client.sendMessage(this.normalizeGroupId(groupId), text);
+      let targetId = chatId;
+      if (chatId.endsWith('@lid')) {
+        try {
+          const contact = await client.getContactById(chatId);
+          if (contact?.id?._serialized) {
+            targetId = contact.id._serialized;
+          }
+        } catch (resolveErr) {
+          console.log(
+            'No se pudo resolver @lid, se usa el original:',
+            resolveErr.message,
+          );
+        }
+      }
+      const mess = await client.sendMessage(targetId, text);
       return { ok: true };
     } catch (e) {
       return { ok: false, error: e.message };
@@ -163,36 +169,21 @@ export class WhatsappWebProvider
   }
 
   async getChats(sessionId: string): Promise<WhatsappChatSummary[]> {
-    const client = this.getClient(sessionId);
-    if (!client) throw new Error('WhatsApp no está conectado');
+    return (await this.getAllChats(sessionId)).filter((c) => !c.isGroup);
+  }
 
-    const state = await client.getState().catch(() => null);
-    if (state !== 'CONNECTED') {
-      throw new Error(
-        `WhatsApp no está listo (estado: ${state ?? 'desconocido'})`,
-      );
-    }
-
-    try {
-      const chats = await client.getChats();
-      return chats
-        .filter((c) => !c.isGroup)
-        .map((c) => ({
-          chatId: c.id._serialized,
-          name: c.name || c.id.user,
-          lastMessage: c.lastMessage?.body,
-          lastMessageAt: c.lastMessage?.timestamp,
-          unreadCount: c.unreadCount,
-        }));
-    } catch (err) {
-      console.log('getChats error', err);
-      this.logger.error(
-        `getChats falló para ${sessionId}: ${err?.message || err}`,
-      );
-      throw new Error(
-        'No se pudieron obtener los chats de WhatsApp, intenta de nuevo',
-      );
-    }
+  async getGroups(sessionId: string): Promise<WhatsappGroupInterface[]> {
+    const all = await this.getAllChats(sessionId);
+    return all
+      .filter((c) => c.isGroup)
+      .map((c) => ({
+        whatsappGroupId: c.chatId,
+        title: c.name,
+        lastMessage: c.lastMessage,
+        lastMessageAt: c.lastMessageAt,
+        unreadCount: c.unreadCount,
+        participantsCount: c.participantsCount,
+      }));
   }
 
   // ── privado: nada de esto sale del módulo ──────────────────
@@ -291,8 +282,7 @@ export class WhatsappWebProvider
 
     client.on('message', async (msg) => {
       const chat = await msg.getChat();
-      if (chat.isGroup) return; // getChats/syncAll tampoco trackean grupos
-      console.log('Mensaje recibido en', msg.id);
+      if (chat.isGroup) return;
       // evento nuevo, para persistir en DB + avisar por socket
       this.eventEmitter.emit('whatsapp.message.persist', {
         sessionId,
@@ -308,7 +298,6 @@ export class WhatsappWebProvider
 
       if (msg.fromMe) return;
 
-      // este evento lo dejo tal cual estaba — asumo que RealtimeGateway ya lo escucha para el chat list en vivo
       const contact = await msg.getContact();
       this.eventEmitter.emit('whatsapp.message.received', {
         sessionId,
@@ -346,6 +335,41 @@ export class WhatsappWebProvider
       if (session.status === 'connected') result.push(id);
     });
     return result;
+  }
+
+  async getAllChats(sessionId: string): Promise<WhatsappChatSummary[]> {
+    const client = this.getClient(sessionId);
+    if (!client) throw new Error('WhatsApp no está conectado');
+
+    const state = await client.getState().catch(() => null);
+    if (state !== 'CONNECTED') {
+      throw new Error(
+        `WhatsApp no está listo (estado: ${state ?? 'desconocido'})`,
+      );
+    }
+
+    try {
+      const chats = await client.getChats();
+      return chats.map((c) => ({
+        chatId: c.id._serialized,
+        name: c.name || c.id.user,
+        isGroup: c.isGroup,
+        lastMessage: c.lastMessage?.body,
+        lastMessageAt: c.lastMessage?.timestamp,
+        unreadCount: c.unreadCount,
+        participantsCount: c.isGroup
+          ? (c as any).participants?.length
+          : undefined,
+      }));
+    } catch (err) {
+      console.log('getAllChats error', err);
+      this.logger.error(
+        `getAllChats falló para ${sessionId}: ${err?.message || err}`,
+      );
+      throw new Error(
+        'No se pudieron obtener los chats de WhatsApp, intenta de nuevo',
+      );
+    }
   }
 
   async getContact(
