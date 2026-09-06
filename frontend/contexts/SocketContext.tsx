@@ -24,7 +24,7 @@ export function SocketProvider({ children }) {
       .then((res) => res.json())
       .then((accounts) => {
         (Array.isArray(accounts) ? accounts : []).forEach((a) =>
-          s.emit("join", a.id),
+          s.emit("join", a.connectionId),
         );
       });
 

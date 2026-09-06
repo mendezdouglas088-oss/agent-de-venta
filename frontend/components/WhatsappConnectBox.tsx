@@ -1,30 +1,34 @@
 "use client";
-import { useEffect } from "react";
-import { QrCode } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Loader2, CheckCircle2, AlertTriangle } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { useSocket } from "@/contexts/SocketContext";
 
 export function WhatsappConnectBox({ connectionId, onConnected }) {
   const { socket, whatsappState } = useSocket();
-  const conn = whatsappState[connectionId] || {};
+  const [initialStatus, setInitialStatus] = useState(null);
+
+  const conn =
+    whatsappState[connectionId] ||
+    (initialStatus ? { status: initialStatus } : {});
   const qrUrl = conn.qr ?? null;
-  const status = conn.status ?? "checking";
+  const status = conn.status ?? "connecting";
+  const isFailed = status === "auth_failed" || status === "error";
 
   useEffect(() => {
     if (!connectionId) return;
-    // si ya hay qr/status guardado (context sobrevivió la navegación), no reinicies la conexión
     if (whatsappState[connectionId]) return;
 
     apiFetch(`/whatsapp/status?connectionId=${connectionId}`)
       .then((r) => r.json())
       .then((s) => {
+        setInitialStatus(s.status);
         if (s.status !== "connected") {
           apiFetch(`/whatsapp/connect?connectionId=${connectionId}`, {
             method: "POST",
           });
         }
       });
-    // whatsappState fuera de deps a propósito: solo queremos chequear el valor al montar
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [connectionId]);
 
@@ -41,17 +45,30 @@ export function WhatsappConnectBox({ connectionId, onConnected }) {
   }, [status, onConnected]);
 
   return (
-    <div className="mx-auto flex h-48 w-48 items-center justify-center rounded-xl border border-neutral-200 bg-neutral-50">
+    <div className="mx-auto flex h-48 w-48 flex-col items-center justify-center gap-2 rounded-xl border border-neutral-200 bg-neutral-50 p-3 text-center">
       {status === "connected" ? (
-        <p className="text-sm text-neutral-600">Conectado ✅</p>
+        <>
+          <CheckCircle2 className="h-10 w-10 text-emerald-500" />
+          <p className="text-sm font-medium text-neutral-700">Conectado</p>
+        </>
       ) : qrUrl ? (
         <img
           src={qrUrl}
           alt="QR de WhatsApp"
           className="h-full w-full rounded-xl object-contain p-2"
         />
+      ) : isFailed ? (
+        <>
+          <AlertTriangle className="h-10 w-10 text-rose-500" />
+          <p className="text-sm text-neutral-600">
+            No se pudo conectar. Cerrá y volvé a intentar.
+          </p>
+        </>
       ) : (
-        <QrCode className="h-24 w-24 text-neutral-800" strokeWidth={1} />
+        <>
+          <Loader2 className="h-10 w-10 animate-spin text-neutral-400" />
+          <p className="text-sm text-neutral-500">Conectando...</p>
+        </>
       )}
     </div>
   );
