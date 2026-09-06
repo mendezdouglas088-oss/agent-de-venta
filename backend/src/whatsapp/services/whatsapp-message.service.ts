@@ -1,13 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WhatsappMessage } from 'src/database/entities/whatsapp-message.entity';
-import { Repository } from 'typeorm';
+import { WhatsappGroup } from 'src/database/entities/whatsapp-group.entity';
+import { In, Repository } from 'typeorm';
 
 @Injectable()
 export class WhatsappMessageService {
   constructor(
     @InjectRepository(WhatsappMessage)
     private readonly messageRepo: Repository<WhatsappMessage>,
+    @InjectRepository(WhatsappGroup)
+    private readonly groupRepo: Repository<WhatsappGroup>,
   ) {}
 
   async findAll(
@@ -28,5 +31,28 @@ export class WhatsappMessageService {
       { sessionId, chatId, isRead: false },
       { isRead: true },
     );
+  }
+
+  async findMentions(sessionId: string, limit: number) {
+    const messages = await this.messageRepo.find({
+      where: { sessionId, mentionsMe: true },
+      order: { timestamp: 'DESC' },
+      take: limit,
+    });
+    if (!messages.length) return [];
+
+    const groupIds = [...new Set(messages.map((m) => m.chatId))];
+    const groups = await this.groupRepo.find({
+      where: { whatsappGroupId: In(groupIds) },
+      select: ['whatsappGroupId', 'title'],
+    });
+    const titleByGroupId = new Map(
+      groups.map((g) => [g.whatsappGroupId, g.title]),
+    );
+
+    return messages.map((m) => ({
+      ...m,
+      groupTitle: titleByGroupId.get(m.chatId) ?? null,
+    }));
   }
 }

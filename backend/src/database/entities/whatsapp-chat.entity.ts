@@ -10,4 +10,7 @@ export class WhatsappChat {
   @Column({ type: 'text', nullable: true }) lastMessage: string;
   @Column({ type: 'bigint', nullable: true }) lastMessageAt: number;
   @Column({ default: 0 }) unreadCount: number;
+
+  @Column({ default: true }) isNew: boolean; // true hasta que el usuario lo marca visto
+  @Column({ type: 'boolean', nullable: true }) isSavedContact: boolean | null; // null = aún no sincronizado
 }

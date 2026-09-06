@@ -2,10 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WhatsappChat } from 'src/database/entities/whatsapp-chat.entity';
 import { WhatsappMessage } from 'src/database/entities/whatsapp-message.entity';
+import { WhatsappGroup } from 'src/database/entities/whatsapp-group.entity';
 import { RealtimeGateway } from 'src/realtime/realtime.gateway';
 import { Repository } from 'typeorm';
 import { WhatsappSyncQueue } from './jobs/whatsapp-sync.queue';
 import { OnEvent } from '@nestjs/event-emitter';
+import { WhatsappMessagePersistPayload } from '../domain/whatsapp-provider.interface';
 
 @Injectable()
 export class WhatsappEventsListener {
@@ -14,22 +16,14 @@ export class WhatsappEventsListener {
     private readonly chatRepo: Repository<WhatsappChat>,
     @InjectRepository(WhatsappMessage)
     private readonly messageRepo: Repository<WhatsappMessage>,
+    @InjectRepository(WhatsappGroup)
+    private readonly groupRepo: Repository<WhatsappGroup>,
     private readonly gateway: RealtimeGateway,
     private readonly syncQueue: WhatsappSyncQueue,
   ) {}
 
   @OnEvent('whatsapp.message.persist')
-  async handleMessage(payload: {
-    sessionId: string;
-    chatId: string;
-    chatName: string;
-    messageId: string;
-    fromMe: boolean;
-    body: string;
-    timestamp: number;
-    ack: number;
-    unreadCount: number;
-  }) {
+  async handleMessage(payload: WhatsappMessagePersistPayload) {
     const result = await this.messageRepo
       .createQueryBuilder()
       .insert()
@@ -42,23 +36,53 @@ export class WhatsappEventsListener {
         timestamp: payload.timestamp,
         isRead: payload.fromMe,
         ack: payload.ack,
+        isGroup: payload.isGroup,
+        type: payload.type,
+        hasMedia: payload.hasMedia,
+        author: payload.author,
+        authorName: payload.authorName,
+        mentionsMe: payload.mentionsMe,
+        serializedId: payload.serializedId,
       })
       .orIgnore()
       .execute();
 
-    await this.chatRepo.upsert(
-      [
-        {
-          sessionId: payload.sessionId,
-          chatId: payload.chatId,
-          name: payload.chatName,
-          lastMessage: payload.body,
-          lastMessageAt: payload.timestamp,
-          unreadCount: payload.unreadCount,
-        },
-      ],
-      ['sessionId', 'chatId'],
-    );
+    if (payload.isGroup) {
+      // el sync periódico también toca esta tabla; aquí solo reflejamos actividad en vivo
+      await this.groupRepo.upsert(
+        [
+          {
+            whatsappGroupId: payload.chatId,
+            title: payload.chatName,
+            lastMessage: payload.body,
+            lastMessageAt: payload.timestamp,
+            unreadCount: payload.unreadCount,
+          },
+        ],
+        ['whatsappGroupId'],
+      );
+    } else {
+      // no pisar isNew: si el chat ya existía, se conserva su valor actual
+      const existingChat = await this.chatRepo.findOne({
+        where: { sessionId: payload.sessionId, chatId: payload.chatId },
+        select: ['isNew'],
+      });
+
+      await this.chatRepo.upsert(
+        [
+          {
+            sessionId: payload.sessionId,
+            chatId: payload.chatId,
+            name: payload.chatName,
+            lastMessage: payload.body,
+            lastMessageAt: payload.timestamp,
+            unreadCount: payload.unreadCount,
+            isNew: existingChat ? existingChat.isNew : true,
+          },
+        ],
+        ['sessionId', 'chatId'],
+      );
+    }
 
     if (result.identifiers.length > 0 && !payload.fromMe) {
       const { total } = await this.chatRepo

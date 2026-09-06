@@ -33,4 +33,22 @@ export class WhatsappChatService {
       .getRawOne();
     return Number(total);
   }
+
+  async findNew(sessionId: string): Promise<WhatsappChat[]> {
+    return this.chatRepo.find({
+      where: { sessionId, isNew: true },
+      order: { lastMessageAt: { direction: 'DESC', nulls: 'LAST' } },
+    });
+  }
+
+  async markSeen(sessionId: string, chatId: string) {
+    await this.chatRepo.update({ sessionId, chatId }, { isNew: false });
+  }
+
+  async findUnregistered(sessionId: string): Promise<WhatsappChat[]> {
+    return this.chatRepo.find({
+      where: { sessionId, isSavedContact: false },
+      order: { lastMessageAt: { direction: 'DESC', nulls: 'LAST' } },
+    });
+  }
 }

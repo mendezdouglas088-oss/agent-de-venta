@@ -24,6 +24,9 @@ import { WhatsappChat } from 'src/database/entities/whatsapp-chat.entity';
 import { WhatsappMessage } from 'src/database/entities/whatsapp-message.entity';
 import { WhatsappChatService } from './services/whatsapp-chat.service';
 import { WhatsappMessageService } from './services/whatsapp-message.service';
+import { WhatsappRegisteredContact } from 'src/database/entities/whatsapp-registered-contact.entity';
+import { WhatsappRegisteredContactsService } from './services/whatsapp-registered-contact.service';
+import { WhatsappRegisteredContactsController } from './controllers/whatsapp-registered-contacts.controller';
 
 @Module({
   imports: [
@@ -33,6 +36,7 @@ import { WhatsappMessageService } from './services/whatsapp-message.service';
       WhatsappGroup,
       WhatsappConnections,
       WhatsappChat,
+      WhatsappRegisteredContact,
       WhatsappMessage,
     ]),
     ConfigModule,
@@ -50,6 +54,7 @@ import { WhatsappMessageService } from './services/whatsapp-message.service';
     WhatsappSyncQueue,
     WhatsappChatService,
     WhatsappMessageService,
+    WhatsappRegisteredContactsService,
     { provide: WHATSAPP_PROVIDER, useClass: WhatsappWebProvider },
   ],
   exports: [
@@ -61,7 +66,12 @@ import { WhatsappMessageService } from './services/whatsapp-message.service';
     WhatsappSyncQueue,
     WhatsappChatService,
     WhatsappMessageService,
+    WhatsappRegisteredContactsService,
   ],
-  controllers: [WhatsappController, WhatsappConnectionsController],
+  controllers: [
+    WhatsappController,
+    WhatsappConnectionsController,
+    WhatsappRegisteredContactsController,
+  ],
 })
 export class WhatsappModule {}

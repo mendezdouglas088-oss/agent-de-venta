@@ -19,6 +19,15 @@ export class WhatsappMessage {
   @Column({ type: 'text', nullable: true }) body: string;
   @Column({ type: 'bigint' }) timestamp: number;
   @Column({ default: false }) isRead: boolean;
-  @Column({ nullable: true }) ack: number; // 1 enviado, 2 recibido, 3 leído
+  @Column({ nullable: true }) ack: number;
+
+  @Column({ default: false }) isGroup: boolean;
+  @Column({ type: 'varchar', default: 'chat' }) type: string; // 'chat'|'image'|'video'|'audio'|'ptt'|'document'|'sticker'|'call_log'|'location'|'vcard'|'unknown'
+  @Column({ default: false }) hasMedia: boolean;
+  @Column({ nullable: true }) author: string; // jid de quien envió, solo en grupos
+  @Column({ nullable: true }) authorName: string;
+  @Column({ default: false }) mentionsMe: boolean;
+  @Column({ nullable: true }) serializedId: string;
+
   @CreateDateColumn() createdAt: Date;
 }

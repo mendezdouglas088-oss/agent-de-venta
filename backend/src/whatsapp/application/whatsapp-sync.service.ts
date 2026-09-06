@@ -6,7 +6,6 @@ import { WhatsappMessage } from 'src/database/entities/whatsapp-message.entity';
 import { RealtimeGateway } from 'src/realtime/realtime.gateway';
 import {
   WHATSAPP_PROVIDER,
-  WhatsappChatSummary,
   WhatsappProvider,
 } from '../domain/whatsapp-provider.interface';
 import { WhatsappGroup } from 'src/database/entities/whatsapp-group.entity';
@@ -23,7 +22,7 @@ export class WhatsappSyncService {
     private readonly messageRepo: Repository<WhatsappMessage>,
     @Inject(WHATSAPP_PROVIDER)
     private readonly whatsappProvider: WhatsappProvider,
-    private readonly gateway: RealtimeGateway, // para emitir eventos de nuevos mensajes
+    private readonly gateway: RealtimeGateway,
     @InjectRepository(WhatsappGroup)
     private readonly groupRepo: Repository<WhatsappGroup>,
     private readonly whatsappConnectionsService: WhatsappConnectionsService,
@@ -35,15 +34,14 @@ export class WhatsappSyncService {
     const chatIds = allChats.filter((c) => !c.isGroup).map((c) => c.chatId);
     const groupIds = allChats.filter((c) => c.isGroup).map((c) => c.chatId);
 
-    const existingChatIds = new Set(
-      (chatIds.length
-        ? await this.chatRepo.find({
-            where: { sessionId, chatId: In(chatIds) },
-            select: ['chatId'],
-          })
-        : []
-      ).map((c) => c.chatId),
-    );
+    const existingChats = chatIds.length
+      ? await this.chatRepo.find({
+          where: { sessionId, chatId: In(chatIds) },
+          select: ['chatId', 'isNew'],
+        })
+      : [];
+    const existingChatsMap = new Map(existingChats.map((c) => [c.chatId, c]));
+
     const existingGroupIds = new Set(
       (groupIds.length
         ? await this.groupRepo.find({
@@ -59,9 +57,11 @@ export class WhatsappSyncService {
     const whatsappConnectionId = connection?.id ?? null;
 
     for (const c of allChats) {
-      const isNew = c.isGroup
-        ? !existingGroupIds.has(c.chatId)
-        : !existingChatIds.has(c.chatId);
+      const existingChat = !c.isGroup
+        ? existingChatsMap.get(c.chatId)
+        : undefined;
+      const isNewGroup = c.isGroup && !existingGroupIds.has(c.chatId);
+      const isNewChat = !c.isGroup && !existingChat;
 
       if (c.isGroup) {
         await this.groupRepo.upsert(
@@ -76,7 +76,7 @@ export class WhatsappSyncService {
           },
           ['whatsappGroupId'],
         );
-        if (isNew) {
+        if (isNewGroup) {
           this.gateway.emitNewGroup(sessionId, {
             whatsappGroupId: c.chatId,
             title: c.name,
@@ -93,11 +93,13 @@ export class WhatsappSyncService {
               lastMessage: c.lastMessage,
               lastMessageAt: c.lastMessageAt,
               unreadCount: c.unreadCount,
+              isSavedContact: c.isSavedContact ?? null,
+              isNew: existingChat ? existingChat.isNew : true,
             },
           ],
           ['sessionId', 'chatId'],
         );
-        if (isNew) {
+        if (isNewChat) {
           this.gateway.emitNewChat(sessionId, {
             chatId: c.chatId,
             name: c.name,
@@ -147,6 +149,8 @@ export class WhatsappSyncService {
     const newMessages = messages.filter((m) => !existingIds.has(m.id.id));
     if (!newMessages.length) return { chatId, newCount: 0 };
 
+    const meId = client.info?.wid?._serialized;
+
     await this.messageRepo.insert(
       newMessages.map((m) => ({
         sessionId,
@@ -157,6 +161,12 @@ export class WhatsappSyncService {
         timestamp: m.timestamp,
         isRead: m.fromMe,
         ack: m.ack,
+        isGroup: chat.isGroup,
+        type: m.type,
+        hasMedia: m.hasMedia,
+        author: chat.isGroup ? m.author : undefined,
+        serializedId: m.id._serialized,
+        mentionsMe: !!meId && (m.mentionedIds ?? []).includes(meId),
       })),
     );
 

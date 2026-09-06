@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WhatsappGroup } from 'src/database/entities/whatsapp-group.entity';
-import { Repository } from 'typeorm';
+import { QueryFailedError, Repository } from 'typeorm';
 import { UsersService } from 'src/users/users.service';
 import { WhatsappGroupInterface } from '../domain/whatsapp-provider.interface';
 import { WhatsappConnectionsService } from './whatsapp-connections.service';
@@ -42,20 +42,33 @@ export class WhatsappGroupService {
     }
   }
 
-  async findAllById(userId: string, whatConnectionId?: string) {
-    const user = await this.usersService.findOne(userId);
-    if (!user) return [];
-    if (!whatConnectionId) {
+  async findAllById(userId: string, connectionId?: string) {
+    try {
+      const user = await this.usersService.findOne(userId);
+      if (!user) return [];
+
+      if (!connectionId) {
+        return await this.repoWhatsappGroup.find({
+          where: {
+            whatsappConnection: { userId },
+          },
+        });
+      }
+
       return await this.repoWhatsappGroup.find({
-        where: { whatsappConnection: { userId } },
+        where: {
+          whatsappConnectionId: connectionId,
+          whatsappConnection: { userId },
+        },
       });
+    } catch (error) {
+      if (error instanceof QueryFailedError) {
+        throw new BadRequestException(
+          `Error al buscar grupos de WhatsApp: ${error.message}`,
+        );
+      }
+      throw error;
     }
-    return await this.repoWhatsappGroup.find({
-      where: {
-        whatsappConnectionId: whatConnectionId,
-        whatsappConnection: { userId },
-      },
-    });
   }
 
   async findAll() {

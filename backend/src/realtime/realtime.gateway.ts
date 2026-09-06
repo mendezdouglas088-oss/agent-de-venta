@@ -81,6 +81,17 @@ export class RealtimeGateway implements OnGatewayConnection {
     client.leave(connectionId);
   }
 
+  @OnEvent('whatsapp.call')
+  handleCall(payload: {
+    sessionId: string;
+    from: string;
+    isVideo: boolean;
+    isGroup: boolean;
+    timestamp: number;
+  }) {
+    this.server.to(payload.sessionId).emit('whatsapp:call', payload);
+  }
+
   @OnEvent('whatsapp.message.received')
   handleWhatsappMessage(payload: any) {
     this.server.to(payload.sessionId).emit('whatsapp:message', payload);

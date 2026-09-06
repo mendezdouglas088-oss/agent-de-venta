@@ -1,5 +1,43 @@
 import { Client } from 'whatsapp-web.js';
 
+export type WhatsappMessageType =
+  | 'chat'
+  | 'image'
+  | 'video'
+  | 'audio'
+  | 'ptt'
+  | 'document'
+  | 'sticker'
+  | 'call_log'
+  | 'location'
+  | 'vcard'
+  | 'unknown';
+
+export interface WhatsappMediaPayload {
+  mimetype: string;
+  data: string; // base64
+  filename?: string;
+}
+
+export interface WhatsappMessagePersistPayload {
+  sessionId: string;
+  chatId: string;
+  chatName: string;
+  messageId: string;
+  fromMe: boolean;
+  body: string;
+  timestamp: number;
+  ack: number;
+  unreadCount: number;
+  isGroup: boolean;
+  type: WhatsappMessageType;
+  hasMedia: boolean;
+  author?: string;
+  authorName?: string;
+  mentionsMe: boolean;
+  serializedId: string;
+}
+
 export type WhatsappConnectionStatus =
   | 'disconnected'
   | 'connecting'
@@ -42,6 +80,7 @@ export interface WhatsappChatSummary {
   lastMessageAt?: number;
   unreadCount: number;
   participantsCount?: number;
+  isSavedContact?: boolean;
 }
 
 export interface WhatsappProvider {
@@ -52,6 +91,16 @@ export interface WhatsappProvider {
   getGroups(sessionId: string): Promise<WhatsappGroupInterface[]>;
   getClient(sessionId: string): Client | null;
   getAllChats(sessionId: string): Promise<WhatsappChatSummary[]>;
+  sendMedia(
+    sessionId: string,
+    chatId: string,
+    media: WhatsappMediaPayload,
+    options?: { caption?: string; sendAudioAsVoice?: boolean },
+  ): Promise<SendResultInterface>;
+  getMedia(
+    sessionId: string,
+    messageId: string,
+  ): Promise<WhatsappMediaPayload | null>;
   sendText(
     sessionId: string,
     groupId: string,

@@ -1,11 +1,10 @@
-// src/whatsapp/infrastructure/whatsapp-web.provider.ts
 import {
   Injectable,
   Logger,
   OnModuleInit,
   OnModuleDestroy,
 } from '@nestjs/common';
-import { Client, LocalAuth, MessageMedia } from 'whatsapp-web.js';
+import { Client, LocalAuth, Message, MessageMedia } from 'whatsapp-web.js';
 import * as QRCode from 'qrcode';
 import {
   WhatsappProvider,
@@ -14,6 +13,8 @@ import {
   WhatsappGroupInterface,
   WhatsappContact,
   WhatsappChatSummary,
+  WhatsappMessageType,
+  WhatsappMediaPayload,
 } from '../domain/whatsapp-provider.interface';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
@@ -120,9 +121,6 @@ export class WhatsappWebProvider
     chatId: string,
     text: string,
   ): Promise<SendResultInterface> {
-    console.log(
-      `sendText called with connectionId: ${connectionId}, chatId: ${chatId}, text: ${text}`,
-    );
     const client = this.getClient(connectionId);
     if (!client) return { ok: false, error: 'WhatsApp no está conectado' };
     try {
@@ -130,9 +128,7 @@ export class WhatsappWebProvider
       if (chatId.endsWith('@lid')) {
         try {
           const contact = await client.getContactById(chatId);
-          if (contact?.id?._serialized) {
-            targetId = contact.id._serialized;
-          }
+          if (contact?.id?._serialized) targetId = contact.id._serialized;
         } catch (resolveErr) {
           console.log(
             'No se pudo resolver @lid, se usa el original:',
@@ -140,7 +136,8 @@ export class WhatsappWebProvider
           );
         }
       }
-      const mess = await client.sendMessage(targetId, text);
+      const msg = await client.sendMessage(targetId, text);
+      await this.persistOutgoing(connectionId, msg);
       return { ok: true };
     } catch (e) {
       return { ok: false, error: e.message };
@@ -161,9 +158,8 @@ export class WhatsappWebProvider
     for (const [i, url] of urls.entries()) {
       const media = await this.loadMedia(url);
       const options = i === 0 && caption ? { caption } : {};
-      await client.sendMessage(groupId, media, options);
-
-      // await client.sendMessage(this.normalizeGroupId(groupId), media, options);
+      const msg = await client.sendMessage(groupId, media, options);
+      await this.persistOutgoing(sessionId, msg); // ← nuevo
     }
     return { ok: true };
   }
@@ -280,10 +276,31 @@ export class WhatsappWebProvider
       });
     });
 
+    client.on('call', async (call) => {
+      this.eventEmitter.emit('whatsapp.call', {
+        sessionId,
+        from: call.from,
+        isVideo: call.isVideo,
+        isGroup: call.isGroup,
+        timestamp: call.timestamp,
+      });
+    });
+
     client.on('message', async (msg) => {
       const chat = await msg.getChat();
-      if (chat.isGroup) return;
-      // evento nuevo, para persistir en DB + avisar por socket
+      const isGroup = chat.isGroup;
+      const meId = client.info?.wid?._serialized;
+      const mentionedIds = msg.mentionedIds ?? [];
+      const mentionsMe = !!meId && mentionedIds.includes(meId);
+
+      let author: string | undefined;
+      let authorName: string | undefined;
+      if (isGroup && !msg.fromMe) {
+        const contact = await msg.getContact();
+        author = contact.id._serialized;
+        authorName = contact.pushname || contact.number;
+      }
+
       this.eventEmitter.emit('whatsapp.message.persist', {
         sessionId,
         chatId: chat.id._serialized,
@@ -294,6 +311,13 @@ export class WhatsappWebProvider
         timestamp: msg.timestamp,
         ack: msg.ack,
         unreadCount: chat.unreadCount,
+        isGroup,
+        type: this.mapMessageType(msg.type),
+        serializedId: msg.id._serialized,
+        hasMedia: msg.hasMedia,
+        author,
+        authorName,
+        mentionsMe,
       });
 
       if (msg.fromMe) return;
@@ -302,13 +326,17 @@ export class WhatsappWebProvider
       this.eventEmitter.emit('whatsapp.message.received', {
         sessionId,
         chatId: msg.from,
-        isGroup: msg.from.endsWith('@g.us'),
+        isGroup,
         contact: {
           chatId: contact.id._serialized,
           name: contact.pushname || contact.number,
           phoneNumber: contact.number,
         },
         text: msg.body,
+        messageId: msg.id.id,
+        serializedId: msg.id._serialized,
+        type: this.mapMessageType(msg.type),
+        hasMedia: msg.hasMedia,
       });
     });
 
@@ -326,6 +354,22 @@ export class WhatsappWebProvider
         e.message,
       );
     }
+  }
+
+  private mapMessageType(waType: string): WhatsappMessageType {
+    const known = [
+      'chat',
+      'image',
+      'video',
+      'audio',
+      'ptt',
+      'document',
+      'sticker',
+      'call_log',
+      'location',
+      'vcard',
+    ];
+    return known.includes(waType) ? (waType as WhatsappMessageType) : 'unknown';
   }
 
   // ========================PUBLIC METHODS========================
@@ -349,8 +393,19 @@ export class WhatsappWebProvider
     }
 
     try {
-      const chats = await client.getChats();
-      return chats.map((c) => ({
+      // Una sola llamada para chats y una sola para contactos, en paralelo
+      const [chats, contacts] = await Promise.all([
+        client.getChats(),
+        client.getContacts(),
+      ]);
+
+      // Mapa id -> isMyContact, evita N llamadas a getContact()
+      const contactMap = new Map<string, boolean>();
+      for (const contact of contacts) {
+        contactMap.set(contact.id._serialized, contact.isMyContact);
+      }
+
+      const summaries: WhatsappChatSummary[] = chats.map((c) => ({
         chatId: c.id._serialized,
         name: c.name || c.id.user,
         isGroup: c.isGroup,
@@ -360,7 +415,12 @@ export class WhatsappWebProvider
         participantsCount: c.isGroup
           ? (c as any).participants?.length
           : undefined,
+        isSavedContact: c.isGroup
+          ? undefined
+          : contactMap.get(c.id._serialized),
       }));
+
+      return summaries;
     } catch (err) {
       console.log('getAllChats error', err);
       this.logger.error(
@@ -384,5 +444,79 @@ export class WhatsappWebProvider
       name: contact.pushname || contact.number,
       phoneNumber: contact.number,
     };
+  }
+
+  async sendMedia(
+    sessionId: string,
+    chatId: string,
+    media: WhatsappMediaPayload,
+    options: { caption?: string; sendAudioAsVoice?: boolean } = {},
+  ): Promise<SendResultInterface> {
+    const client = this.getClient(sessionId);
+    if (!client) return { ok: false, error: 'WhatsApp no está conectado' };
+    try {
+      const messageMedia = new MessageMedia(
+        media.mimetype,
+        media.data,
+        media.filename,
+      );
+      const msg = await client.sendMessage(chatId, messageMedia, {
+        caption: options.caption,
+        sendAudioAsVoice:
+          options.sendAudioAsVoice ?? media.mimetype.startsWith('audio/'),
+      });
+      await this.persistOutgoing(sessionId, msg); // ← nuevo
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, error: e.message };
+    }
+  }
+
+  async getMedia(
+    sessionId: string,
+    messageId: string, // debe ser el serializedId, no el messageId corto
+  ): Promise<WhatsappMediaPayload | null> {
+    const client = this.getClient(sessionId);
+    if (!client) return null;
+    try {
+      const msg = await client.getMessageById(messageId);
+      if (!msg?.hasMedia) return null;
+      const media = await msg.downloadMedia();
+      if (!media) return null;
+      return {
+        mimetype: media.mimetype,
+        data: media.data,
+        filename: media.filename,
+      };
+    } catch (e) {
+      this.logger.warn(`getMedia falló para ${messageId}: ${e.message}`);
+      return null;
+    }
+  }
+
+  private async persistOutgoing(sessionId: string, msg: Message) {
+    try {
+      const chat = await msg.getChat();
+      this.eventEmitter.emit('whatsapp.message.persist', {
+        sessionId,
+        chatId: chat.id._serialized,
+        chatName: chat.name || chat.id.user,
+        messageId: msg.id.id,
+        serializedId: msg.id._serialized,
+        fromMe: true,
+        body: msg.body,
+        timestamp: msg.timestamp,
+        ack: msg.ack,
+        unreadCount: chat.unreadCount,
+        isGroup: chat.isGroup,
+        type: this.mapMessageType(msg.type),
+        hasMedia: msg.hasMedia,
+        author: undefined,
+        authorName: undefined,
+        mentionsMe: false,
+      });
+    } catch (e) {
+      this.logger.warn(`No se pudo persistir mensaje saliente: ${e.message}`);
+    }
   }
 }

@@ -10,6 +10,8 @@ import {
   Req,
   DefaultValuePipe,
   ParseIntPipe,
+  Param,
+  HttpStatus,
 } from '@nestjs/common';
 import {
   WHATSAPP_PROVIDER,
@@ -22,6 +24,7 @@ import { WhatsappChatService } from '../services/whatsapp-chat.service';
 import { WhatsappMessageService } from '../services/whatsapp-message.service';
 import { RealtimeGateway } from 'src/realtime/realtime.gateway';
 import { WhatsappSyncQueue } from '../infrastructure/jobs/whatsapp-sync.queue';
+import { tryCatch } from 'bullmq';
 
 @UseGuards(JwtAuthGuard)
 @Controller('whatsapp')
@@ -117,13 +120,17 @@ export class WhatsappController {
   @Get('groups')
   async getGroups(
     @Req() req: any,
-    @Query('whatConnectionId') whatConnectionId?: string,
+    @Query('connectionId') connectionId?: string,
   ) {
-    const user = req.user;
-    return await this.whatsappGroupService.findAllById(
-      user.id,
-      whatConnectionId,
-    );
+    try {
+      const user = req.user;
+      return await this.whatsappGroupService.findAllById(user.id, connectionId);
+    } catch (error) {
+      return {
+        status: error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+        message: error.message,
+      };
+    }
   }
 
   @Post('send_message')
@@ -154,5 +161,69 @@ export class WhatsappController {
       body.imageUrls,
       body.caption,
     );
+  }
+
+  @Post('send-media')
+  async sendMedia(
+    @Body()
+    body: {
+      connectionId: string;
+      chatId: string;
+      mimetype: string;
+      data: string; // base64
+      filename?: string;
+      caption?: string;
+    },
+  ) {
+    return await this.provider.sendMedia(
+      body.connectionId,
+      body.chatId,
+      { mimetype: body.mimetype, data: body.data, filename: body.filename },
+      { caption: body.caption },
+    );
+  }
+
+  @Get('media/:messageId')
+  async getMedia(
+    @Query('connectionId') connectionId: string,
+    @Param('messageId') messageId: string,
+  ) {
+    return await this.provider.getMedia(connectionId, messageId);
+  }
+
+  @Get('chats/new')
+  async getNewChats(@Query('connectionId') connectionId: string) {
+    return this.chatsService.findNew(connectionId);
+  }
+
+  @Post('chats/:chatId/seen')
+  async markChatSeen(
+    @Query('connectionId') connectionId: string,
+    @Param('chatId') chatId: string,
+  ) {
+    await this.chatsService.markSeen(connectionId, chatId);
+    return { ok: true };
+  }
+
+  @Get('chats/unregistered')
+  async getUnregisteredChats(@Query('connectionId') connectionId: string) {
+    return this.chatsService.findUnregistered(connectionId);
+  }
+
+  @Get('groups/:groupId/messages')
+  async getGroupMessages(
+    @Query('connectionId') connectionId: string,
+    @Param('groupId') groupId: string,
+    @Query('limit', new DefaultValuePipe(150), ParseIntPipe) limit: number,
+  ) {
+    return this.messageService.findAll(connectionId, groupId, limit);
+  }
+
+  @Get('mentions')
+  async getMentions(
+    @Query('connectionId') connectionId: string,
+    @Query('limit', new DefaultValuePipe(100), ParseIntPipe) limit: number,
+  ) {
+    return this.messageService.findMentions(connectionId, limit);
   }
 }
