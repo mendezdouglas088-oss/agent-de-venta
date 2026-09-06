@@ -10,6 +10,7 @@ import { Transfer } from './transfer.entity';
 import { WhatsappConnections } from './whatsapp-conections.entity';
 import { WhatsappChat } from './whatsapp-chat.entity';
 import { WhatsappMessage } from './whatsapp-message.entity';
+import { WhatsappRegisteredContact } from './whatsapp-registered-contact.entity';
 
 export const entities = [
   Product,
@@ -24,6 +25,7 @@ export const entities = [
   WhatsappGroup,
   WhatsappChat,
   WhatsappMessage,
+  WhatsappRegisteredContact,
 ];
 
 export { Plan, PlanType, PLAN_CONFIGS } from './plan.entity';
