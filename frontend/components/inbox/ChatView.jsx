@@ -17,6 +17,7 @@ import {
   Send,
 } from "lucide-react";
 import { apiFetch } from "@/lib/api";
+import { MediaAttachment } from "./MediaAttachment";
 
 import { MessageOptionsMenu } from "./MessageOptionsMenu";
 
@@ -29,6 +30,7 @@ export function ChatView({
   isTyping,
   onReply,
   onForward,
+  effectiveAccountName,
 }) {
   const [bookmarked, setBookmarked] = useState(false);
   const [messageDraft, setMessageDraft] = useState("");
@@ -60,7 +62,7 @@ export function ChatView({
     const optimisticMsg = {
       id: `temp-${Date.now()}`,
       side: "out",
-      from: "Tú",
+      from: effectiveAccountName,
       text,
       timestamp: Date.now(), // nuevo
       meta: "Enviando...",
@@ -152,6 +154,13 @@ export function ChatView({
                 </div>
                 <div className="rounded-2xl rounded-tl-sm bg-white  px-4 py-3 text-sm text-neutral-700 shadow-sm">
                   {m.text}
+                  <MediaAttachment
+                    type={m.type}
+                    hasMedia={m.hasMedia}
+                    serializedId={m.serializedId}
+                    connectionId={activeChat?.connectionId}
+                    caption={m.text}
+                  />
                 </div>
                 <p className="mt-1 text-right text-xs text-neutral-300">
                   {m.meta}
@@ -216,6 +225,13 @@ export function ChatView({
                 </p>
                 <div className="rounded-2xl rounded-br-sm border border-neutral-200  border-emerald-200 bg-emerald-100 px-4 py-3 text-sm text-neutral-700 ">
                   <p>{m.text}</p>
+                  <MediaAttachment
+                    type={m.type}
+                    hasMedia={m.hasMedia}
+                    serializedId={m.serializedId}
+                    connectionId={activeChat?.connectionId}
+                    caption={m.text}
+                  />
                   {m.link && (
                     <a
                       href={m.link}

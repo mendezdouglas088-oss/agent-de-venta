@@ -72,12 +72,12 @@ export default function CRMInboxDashboard() {
       .catch(() => setToast("Could not load accounts."));
   }
 
-  useEffect(() => {
-    socket.on("typing", ({ chatId, isTyping }) => {
-      setTypingChatId(isTyping ? chatId : null);
-    });
-    return () => socket.off("typing");
-  }, [socket]);
+  // useEffect(() => {
+  //   socket.on("typing", ({ chatId, isTyping }) => {
+  //     setTypingChatId(isTyping ? chatId : null);
+  //   });
+  //   return () => socket.off("typing");
+  // }, [socket]);
 
   useEffect(() => {
     fetchAccounts();
@@ -140,9 +140,12 @@ export default function CRMInboxDashboard() {
       from: m.fromMe ? effectiveAccountName || "Company" : activeChat.name,
       side: m.fromMe ? "out" : "in",
       time,
-      timestamp: m.timestamp * 1000, // nuevo
+      timestamp: m.timestamp * 1000,
       text: m.body || "",
       meta: `Message ${m.fromMe ? "sent" : "received"} ${time}`,
+      type: m.type, // ← nuevo
+      hasMedia: m.hasMedia, // ← nuevo
+      serializedId: m.serializedId, // ← nuevo
     };
   }
 
@@ -184,6 +187,11 @@ export default function CRMInboxDashboard() {
   useEffect(() => {
     effectiveChatIdRef.current = effectiveChatId;
   }, [effectiveChatId]);
+
+  const effectiveAccountIdRef = useRef(effectiveAccountId);
+  useEffect(() => {
+    effectiveAccountIdRef.current = effectiveAccountId;
+  }, [effectiveAccountId]);
   const [messages, setMessages] = useState([]);
 
   useEffect(() => {
@@ -210,6 +218,14 @@ export default function CRMInboxDashboard() {
   }, [effectiveChatId]);
 
   function upsertChatFromMessage(payload) {
+    const currentAccountId = effectiveAccountIdRef.current;
+    if (
+      currentAccountId !== ALL_ACCOUNTS &&
+      payload.sessionId !== currentAccountId
+    ) {
+      return;
+    }
+
     const compositeId = `${payload.sessionId}::${payload.chatId}`;
     const isActive = compositeId === effectiveChatIdRef.current;
 
@@ -229,9 +245,12 @@ export default function CRMInboxDashboard() {
             }),
             timestamp: payload.timestamp
               ? payload.timestamp * 1000
-              : Date.now(), // nuevo
+              : Date.now(),
             text: payload.text,
             meta: `Message ${payload.fromMe ? "sent" : "received"} just now`,
+            type: payload.type, // ← nuevo
+            hasMedia: payload.hasMedia, // ← nuevo
+            serializedId: payload.serializedId, // ← nuevo
           },
         ].sort((a, b) => a.timestamp - b.timestamp),
       );
@@ -272,6 +291,14 @@ export default function CRMInboxDashboard() {
   }
 
   function upsertNewChat(payload) {
+    const currentAccountId = effectiveAccountIdRef.current;
+    if (
+      currentAccountId !== ALL_ACCOUNTS &&
+      payload.sessionId !== currentAccountId
+    ) {
+      return;
+    }
+
     const compositeId = `${payload.sessionId}::${payload.chatId}`;
     setChats((prev) =>
       prev.some((c) => c.id === compositeId)
@@ -381,6 +408,7 @@ export default function CRMInboxDashboard() {
               onOpenPostModal={() => setShowPostModal(true)}
               onMessageSent={(msg) => setMessages((prev) => [...prev, msg])}
               isTyping={typingChatId === activeChat?.id}
+              effectiveAccountName={effectiveAccountName}
             />
 
             <ProfileSidebar activeChat={activeChat} />
@@ -417,18 +445,18 @@ export default function CRMInboxDashboard() {
           accounts={accounts}
           onClose={() => setShowSelectUserModal(false)}
           onSelectAccount={(account) => {
+            const isAll = account.id === ALL_ACCOUNTS;
             setSelectedAccountName(account.name);
             setSelectedAccountId(
-              account.id === ALL_ACCOUNTS
-                ? ALL_ACCOUNTS
-                : (account.connectionId ?? null),
+              isAll ? ALL_ACCOUNTS : (account.connectionId ?? null),
             );
             setConnectingAccountId(
-              account.id === ALL_ACCOUNTS
-                ? null
-                : (account.connectionId ?? null),
+              isAll ? null : (account.connectionId ?? null),
             );
             setShowSelectUserModal(false);
+            if (!isAll) {
+              setShowWhatsAppQR(true);
+            }
           }}
         />
       )}

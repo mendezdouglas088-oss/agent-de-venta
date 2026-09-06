@@ -66,7 +66,13 @@ export class UsersService {
   async findOne(id: string): Promise<User> {
     return await this.usersRepository.findOne({
       where: { id },
-      relations: ['products', 'userPlan', 'userPlan.plan'],
+      relations: [
+        'products',
+        'userPlan',
+        'userPlan.plan',
+        'whatsappConnections',
+        'whatsappConnections.whatsappGroups',
+      ],
     });
   }
 
