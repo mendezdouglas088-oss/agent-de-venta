@@ -1,0 +1,191 @@
+"use client";
+
+import {
+  Plus,
+  ChevronDown,
+  ChevronRight,
+  Archive,
+  Hash,
+  AtSign,
+  FolderOpen,
+  FileText,
+  MessageSquare,
+  Star,
+  UserPlus,
+  Inbox,
+} from "lucide-react";
+import { Avatar } from "@/components/inbox/Avatar";
+
+const MAIN_MENU = [
+  { key: "channels", label: "Channels", icon: Hash },
+  { key: "drafts", label: "Drafts", icon: FileText },
+  { key: "mentions", label: "Mentions", icon: AtSign },
+  { key: "files", label: "Files & Media", icon: FolderOpen },
+];
+
+const CONVERSATION_FILTERS = [
+  { key: "all", label: "All", icon: MessageSquare, count: 30 },
+  { key: "new", label: "New", icon: Inbox, count: 5 },
+  { key: "assigned", label: "Assigned", icon: UserPlus, count: 11 },
+  { key: "favourites", label: "Favourites", icon: Star, count: 9 },
+];
+
+const NEGOTIATION_SUBCATEGORIES = ["All", "Urgent", "Completed"];
+
+const CONTACTS = [
+  "Nayla Barghese",
+  "Sofia Ahmed",
+  "Mark Buffalo",
+  "Patrick Shwayne",
+  "Liang li",
+];
+
+export function NavSidebar({
+  effectiveAccountName,
+  activeFilter,
+  onFilterChange,
+  negotiationsOpen,
+  onToggleNegotiations,
+  onAddUser,
+  onAccountClick,
+}) {
+  return (
+    <div className="flex h-full w-64 flex-col border-r border-neutral-200 bg-white">
+      <div className="flex items-center justify-between px-5 pt-5">
+        <h1 className="text-lg font-semibold text-neutral-900">Inbox</h1>
+        <button
+          type="button"
+          className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600"
+          onClick={onAddUser}
+        >
+          <Plus className="h-4 w-4" />
+        </button>
+      </div>
+
+      <button
+        type="button"
+        className="mt-4 flex items-center gap-2.5 px-5"
+        onClick={onAccountClick}
+      >
+        <Avatar name={effectiveAccountName || "?"} size="h-8 w-8" />
+        <span className="text-sm font-medium text-neutral-700">
+          {effectiveAccountName}
+        </span>
+      </button>
+
+      <div className="mt-6 flex-1 overflow-y-auto px-3">
+        <div className="space-y-0.5">
+          {MAIN_MENU.map((item) => (
+            <button
+              key={item.key}
+              type="button"
+              className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-sm text-neutral-500 hover:bg-neutral-50 hover:text-neutral-800"
+            >
+              <item.icon className="h-4 w-4" />
+              {item.label}
+            </button>
+          ))}
+        </div>
+
+        <p className="mt-6 px-2.5 text-xs font-semibold uppercase tracking-wide text-neutral-300">
+          Conversations
+        </p>
+        <div className="mt-1.5 space-y-0.5">
+          {CONVERSATION_FILTERS.map((f) => (
+            <button
+              key={f.key}
+              type="button"
+              onClick={() => onFilterChange(f.key)}
+              className={`flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-sm ${
+                activeFilter === f.key
+                  ? "bg-emerald-50 text-emerald-700"
+                  : "text-neutral-500 hover:bg-neutral-50 hover:text-neutral-800"
+              }`}
+            >
+              <span className="flex items-center gap-3">
+                <f.icon className="h-4 w-4" />
+                {f.label}
+              </span>
+              <span className="text-xs text-neutral-400">{f.count}</span>
+            </button>
+          ))}
+
+          <div>
+            <button
+              type="button"
+              onClick={onToggleNegotiations}
+              className="flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-sm text-neutral-500 hover:bg-neutral-50 hover:text-neutral-800"
+            >
+              <span className="flex items-center gap-3">
+                {negotiationsOpen ? (
+                  <ChevronDown className="h-3.5 w-3.5" />
+                ) : (
+                  <ChevronRight className="h-3.5 w-3.5" />
+                )}
+                Negotiations
+              </span>
+              <span className="text-xs text-neutral-400">20</span>
+            </button>
+            {negotiationsOpen && (
+              <div className="ml-6 mt-0.5 space-y-0.5 border-l border-neutral-100 pl-3">
+                {NEGOTIATION_SUBCATEGORIES.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    className="block w-full rounded-lg px-2 py-1.5 text-left text-sm text-neutral-400 hover:bg-neutral-50 hover:text-neutral-700"
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <button
+            type="button"
+            className="flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-sm text-neutral-500 hover:bg-neutral-50 hover:text-neutral-800"
+          >
+            <span className="flex items-center gap-3">
+              <ChevronRight className="h-3.5 w-3.5" />
+              Closed
+            </span>
+            <span className="text-xs text-neutral-400">145</span>
+          </button>
+          <button
+            type="button"
+            className="flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-sm text-neutral-500 hover:bg-neutral-50 hover:text-neutral-800"
+          >
+            <span className="flex items-center gap-3">
+              <Archive className="h-3.5 w-3.5" />
+              Archives
+            </span>
+            <span className="text-xs text-neutral-400">32</span>
+          </button>
+        </div>
+
+        <p className="mt-6 px-2.5 text-xs font-semibold uppercase tracking-wide text-neutral-300">
+          Contacts
+        </p>
+        <div className="mb-4 mt-1.5 space-y-0.5">
+          {CONTACTS.map((name) => (
+            <button
+              key={name}
+              type="button"
+              className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-neutral-500 hover:bg-neutral-50 hover:text-neutral-800"
+            >
+              <Avatar name={name} size="h-6 w-6" />
+              {name}
+            </button>
+          ))}
+          <button
+            type="button"
+            className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium text-emerald-600 hover:bg-emerald-50"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Add contacts
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
