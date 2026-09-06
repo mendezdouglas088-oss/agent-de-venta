@@ -56,6 +56,7 @@ export default function CRMInboxDashboard() {
   const [showTelegramForm, setShowTelegramForm] = useState(false);
   const [groups, setGroups] = useState([]);
   const [accounts, setAccounts] = useState([]);
+  const [typingChatId, setTypingChatId] = useState(null);
 
   function fetchAccounts() {
     apiFetch("/whatsapp-connections")
@@ -70,6 +71,13 @@ export default function CRMInboxDashboard() {
       })
       .catch(() => setToast("Could not load accounts."));
   }
+
+  useEffect(() => {
+    socket.on("typing", ({ chatId, isTyping }) => {
+      setTypingChatId(isTyping ? chatId : null);
+    });
+    return () => socket.off("typing");
+  }, [socket]);
 
   useEffect(() => {
     fetchAccounts();
@@ -132,6 +140,7 @@ export default function CRMInboxDashboard() {
       from: m.fromMe ? effectiveAccountName || "Company" : activeChat.name,
       side: m.fromMe ? "out" : "in",
       time,
+      timestamp: m.timestamp * 1000, // nuevo
       text: m.body || "",
       meta: `Message ${m.fromMe ? "sent" : "received"} ${time}`,
     };
@@ -191,7 +200,11 @@ export default function CRMInboxDashboard() {
         return res.json();
       })
       .then((data) =>
-        setMessages((Array.isArray(data) ? data : []).map(mapMessage)),
+        setMessages(
+          (Array.isArray(data) ? data : [])
+            .map(mapMessage)
+            .sort((a, b) => a.timestamp - b.timestamp),
+        ),
       )
       .catch(() => setToast("Could not load messages."));
   }, [effectiveChatId]);
@@ -201,22 +214,27 @@ export default function CRMInboxDashboard() {
     const isActive = compositeId === effectiveChatIdRef.current;
 
     if (isActive) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: payload.messageId ?? Date.now(),
-          from: payload.fromMe
-            ? effectiveAccountName || "Company"
-            : payload.contact?.name || payload.chatId,
-          side: payload.fromMe ? "out" : "in",
-          time: new Date().toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-          text: payload.text,
-          meta: `Message ${payload.fromMe ? "sent" : "received"} just now`,
-        },
-      ]);
+      setMessages((prev) =>
+        [
+          ...prev,
+          {
+            id: payload.messageId ?? Date.now(),
+            from: payload.fromMe
+              ? effectiveAccountName || "Company"
+              : payload.contact?.name || payload.chatId,
+            side: payload.fromMe ? "out" : "in",
+            time: new Date().toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            timestamp: payload.timestamp
+              ? payload.timestamp * 1000
+              : Date.now(), // nuevo
+            text: payload.text,
+            meta: `Message ${payload.fromMe ? "sent" : "received"} just now`,
+          },
+        ].sort((a, b) => a.timestamp - b.timestamp),
+      );
     }
     setChats((prev) => {
       const idx = prev.findIndex((c) => c.id === compositeId);
@@ -361,6 +379,8 @@ export default function CRMInboxDashboard() {
               activeChat={activeChat}
               effectiveAccountId={effectiveAccountId}
               onOpenPostModal={() => setShowPostModal(true)}
+              onMessageSent={(msg) => setMessages((prev) => [...prev, msg])}
+              isTyping={typingChatId === activeChat?.id}
             />
 
             <ProfileSidebar activeChat={activeChat} />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   MessageSquareText,
   CheckCircle2,
@@ -25,12 +25,20 @@ export function ChatView({
   activeChat,
   effectiveAccountId,
   onOpenPostModal,
+  onMessageSent,
+  isTyping,
   onReply,
   onForward,
 }) {
   const [bookmarked, setBookmarked] = useState(false);
   const [messageDraft, setMessageDraft] = useState("");
   const [openMenuId, setOpenMenuId] = useState(null);
+
+  const bottomRef = useRef(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ block: "end" });
+  }, [activeChat?.id, messages]);
 
   function handleCopy(m) {
     navigator.clipboard?.writeText(m.text ?? "");
@@ -46,6 +54,19 @@ export function ChatView({
     : activeChat?.id;
   async function handleSendMessage() {
     if (!messageDraft.trim()) return;
+    const text = messageDraft;
+    setMessageDraft("");
+
+    const optimisticMsg = {
+      id: `temp-${Date.now()}`,
+      side: "out",
+      from: "Tú",
+      text,
+      timestamp: Date.now(), // nuevo
+      meta: "Enviando...",
+    };
+    onMessageSent?.(optimisticMsg);
+
     try {
       const res = await apiFetch("/whatsapp/send_message", {
         method: "POST",
@@ -53,16 +74,12 @@ export function ChatView({
         body: JSON.stringify({
           connectionId: effectiveAccountId,
           chatId: realChatId,
-          message: messageDraft,
+          message: text,
         }),
       });
       const data = await res.json();
-      if (!res.ok || !data.ok) {
-        console.error("Failed to send message", data);
-        console.log("Failed to send message", res);
-        throw new Error("Failed to send message");
-      }
-      setMessageDraft("");
+      if (!res.ok || !data.ok)
+        throw new Error(data.error || "Failed to send message");
     } catch (err) {
       console.error(err);
     }
@@ -230,6 +247,14 @@ export function ChatView({
             </div>
           ),
         )}
+        {isTyping && (
+          <div className="flex justify-start">
+            <div className="rounded-2xl rounded-tl-sm bg-white px-4 py-3 text-sm text-neutral-400 shadow-sm">
+              escribiendo…
+            </div>
+          </div>
+        )}
+        <div ref={bottomRef} />
       </div>
 
       <div className="border-t border-neutral-200 bg-white px-6 py-4">
@@ -244,6 +269,12 @@ export function ChatView({
             <input
               value={messageDraft}
               onChange={(e) => setMessageDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleSendMessage();
+                }
+              }}
               placeholder="Type your message..."
               className="flex-1 bg-transparent text-sm text-neutral-700 placeholder-neutral-400 outline-none"
             />
