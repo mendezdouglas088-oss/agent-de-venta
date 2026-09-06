@@ -23,13 +23,6 @@ const MAIN_MENU = [
   { key: "files", label: "Files & Media", icon: FolderOpen },
 ];
 
-const CONVERSATION_FILTERS = [
-  { key: "all", label: "All", icon: MessageSquare, count: 30 },
-  { key: "new", label: "New", icon: Inbox, count: 5 },
-  { key: "assigned", label: "Assigned", icon: UserPlus, count: 11 },
-  { key: "favourites", label: "Favourites", icon: Star, count: 9 },
-];
-
 const NEGOTIATION_SUBCATEGORIES = ["All", "Urgent", "Completed"];
 
 const CONTACTS = [
@@ -42,13 +35,24 @@ const CONTACTS = [
 
 export function NavSidebar({
   effectiveAccountName,
+  activeSection, // "chats" | "channels" | "mentions"
+  onSectionChange,
   activeFilter,
   onFilterChange,
+  unreadTotal = 0,
+  newCount = 0,
   negotiationsOpen,
   onToggleNegotiations,
   onAddUser,
   onAccountClick,
 }) {
+  const conversationFilters = [
+    { key: "all", label: "All", icon: MessageSquare, count: unreadTotal },
+    { key: "new", label: "New", icon: Inbox, count: newCount },
+    { key: "assigned", label: "Assigned", icon: UserPlus, count: null },
+    { key: "favourites", label: "Favourites", icon: Star, count: null },
+  ];
+
   return (
     <div className="flex h-full w-64 flex-col border-r border-neutral-200 bg-white">
       <div className="flex items-center justify-between px-5 pt-5">
@@ -75,29 +79,42 @@ export function NavSidebar({
 
       <div className="mt-6 flex-1 overflow-y-auto px-3">
         <div className="space-y-0.5">
-          {MAIN_MENU.map((item) => (
-            <button
-              key={item.key}
-              type="button"
-              className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-sm text-neutral-500 hover:bg-neutral-50 hover:text-neutral-800"
-            >
-              <item.icon className="h-4 w-4" />
-              {item.label}
-            </button>
-          ))}
+          {MAIN_MENU.map((item) => {
+            const clickable =
+              item.key === "channels" || item.key === "mentions";
+            const isActive = activeSection === item.key;
+            return (
+              <button
+                key={item.key}
+                type="button"
+                disabled={!clickable}
+                onClick={() => clickable && onSectionChange(item.key)}
+                className={`flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-sm ${
+                  isActive
+                    ? "bg-emerald-50 text-emerald-700"
+                    : clickable
+                      ? "text-neutral-500 hover:bg-neutral-50 hover:text-neutral-800"
+                      : "cursor-default text-neutral-300"
+                }`}
+              >
+                <item.icon className="h-4 w-4" />
+                {item.label}
+              </button>
+            );
+          })}
         </div>
 
         <p className="mt-6 px-2.5 text-xs font-semibold uppercase tracking-wide text-neutral-300">
           Conversations
         </p>
         <div className="mt-1.5 space-y-0.5">
-          {CONVERSATION_FILTERS.map((f) => (
+          {conversationFilters.map((f) => (
             <button
               key={f.key}
               type="button"
               onClick={() => onFilterChange(f.key)}
               className={`flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-sm ${
-                activeFilter === f.key
+                activeSection === "chats" && activeFilter === f.key
                   ? "bg-emerald-50 text-emerald-700"
                   : "text-neutral-500 hover:bg-neutral-50 hover:text-neutral-800"
               }`}
@@ -106,7 +123,9 @@ export function NavSidebar({
                 <f.icon className="h-4 w-4" />
                 {f.label}
               </span>
-              <span className="text-xs text-neutral-400">{f.count}</span>
+              {f.count !== null && (
+                <span className="text-xs text-neutral-400">{f.count}</span>
+              )}
             </button>
           ))}
 

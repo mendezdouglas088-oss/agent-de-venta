@@ -139,37 +139,33 @@ export class WhatsappSyncService {
 
     const chat = await client.getChatById(chatId);
     const messages = await chat.fetchMessages({ limit });
-    const incomingIds = messages.map((m) => m.id.id);
-
-    const existing = await this.messageRepo.find({
-      where: { sessionId, messageId: In(incomingIds) },
-      select: ['messageId'],
-    });
-    const existingIds = new Set(existing.map((e) => e.messageId));
-    const newMessages = messages.filter((m) => !existingIds.has(m.id.id));
-    if (!newMessages.length) return { chatId, newCount: 0 };
-
     const meId = client.info?.wid?._serialized;
 
-    await this.messageRepo.insert(
-      newMessages.map((m) => ({
-        sessionId,
-        chatId,
-        messageId: m.id.id,
-        fromMe: m.fromMe,
-        body: m.body,
-        timestamp: m.timestamp,
-        isRead: m.fromMe,
-        ack: m.ack,
-        isGroup: chat.isGroup,
-        type: m.type,
-        hasMedia: m.hasMedia,
-        author: chat.isGroup ? m.author : undefined,
-        serializedId: m.id._serialized,
-        mentionsMe: !!meId && (m.mentionedIds ?? []).includes(meId),
-      })),
-    );
+    const rows = messages.map((m) => ({
+      sessionId,
+      chatId,
+      messageId: m.id.id,
+      fromMe: m.fromMe,
+      body: m.body,
+      timestamp: m.timestamp,
+      isRead: m.fromMe,
+      ack: m.ack,
+      isGroup: chat.isGroup,
+      type: m.type,
+      hasMedia: m.hasMedia,
+      author: chat.isGroup ? m.author : undefined,
+      serializedId: m.id._serialized,
+      mentionsMe: !!meId && (m.mentionedIds ?? []).includes(meId),
+    }));
 
-    return { chatId, newCount: newMessages.length };
+    const result = await this.messageRepo
+      .createQueryBuilder()
+      .insert()
+      .into(this.messageRepo.target)
+      .values(rows)
+      .orIgnore()
+      .execute();
+
+    return { chatId, newCount: result.identifiers.filter(Boolean).length };
   }
 }

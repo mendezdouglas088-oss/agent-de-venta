@@ -290,8 +290,27 @@ export class WhatsappWebProvider
       const chat = await msg.getChat();
       const isGroup = chat.isGroup;
       const meId = client.info?.wid?._serialized;
+      const myNumber = client.info?.wid?.user;
       const mentionedIds = msg.mentionedIds ?? [];
-      const mentionsMe = !!meId && mentionedIds.includes(meId);
+
+      let mentionsMe = false;
+      for (const id of mentionedIds) {
+        if (id === meId) {
+          mentionsMe = true;
+          break;
+        }
+        if (id.endsWith('@lid')) {
+          try {
+            const contact = await client.getContactById(id);
+            if (contact?.number === myNumber) {
+              mentionsMe = true;
+              break;
+            }
+          } catch {
+            // no se pudo resolver el lid, seguimos
+          }
+        }
+      }
 
       let author: string | undefined;
       let authorName: string | undefined;

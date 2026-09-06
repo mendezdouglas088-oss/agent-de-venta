@@ -137,7 +137,6 @@ export class WhatsappController {
   async sendMessage(
     @Body() body: { connectionId: string; chatId: string; message: string },
   ) {
-    console.log('sendMessage body:', body);
     return await this.provider.sendText(
       body.connectionId,
       body.chatId,

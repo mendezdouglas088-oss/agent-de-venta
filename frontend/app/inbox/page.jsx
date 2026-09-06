@@ -57,6 +57,9 @@ export default function CRMInboxDashboard() {
   const [groups, setGroups] = useState([]);
   const [accounts, setAccounts] = useState([]);
   const [typingChatId, setTypingChatId] = useState(null);
+  const [chats, setChats] = useState([]);
+  const [activeSection, setActiveSection] = useState("chats"); // "chats" | "channels" | "mentions"
+  const [mentions, setMentions] = useState([]);
 
   function fetchAccounts() {
     apiFetch("/whatsapp-connections")
@@ -98,7 +101,7 @@ export default function CRMInboxDashboard() {
         if (!res.ok) throw new Error("Request failed");
         return res.json();
       })
-      .then(setGroups)
+      .then((data) => setGroups(Array.isArray(data) ? data : []))
       .catch(() => setToast("Could not load groups."));
   }, [effectiveAccountId]);
 
@@ -107,6 +110,20 @@ export default function CRMInboxDashboard() {
     apiFetch(`/whatsapp/sync?connectionId=${effectiveAccountId}`, {
       method: "POST",
     }).catch(() => {}); // best-effort, la data nueva llega por socket
+  }, [effectiveAccountId]);
+
+  useEffect(() => {
+    if (!effectiveAccountId || effectiveAccountId === ALL_ACCOUNTS) {
+      setMentions([]);
+      return;
+    }
+    apiFetch(`/whatsapp/mentions?connectionId=${effectiveAccountId}&limit=100`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Request failed");
+        return res.json();
+      })
+      .then(setMentions)
+      .catch(() => setToast("Could not load mentions."));
   }, [effectiveAccountId]);
 
   useEffect(() => {
@@ -120,8 +137,6 @@ export default function CRMInboxDashboard() {
   const effectiveAccountName =
     selectedAccountName ?? (accounts[0] ? accounts[0].name : "");
 
-  const [chats, setChats] = useState([]);
-
   function formatChatTime(timestamp) {
     if (!timestamp) return "";
     return new Date(timestamp * 1000).toLocaleTimeString([], {
@@ -130,22 +145,61 @@ export default function CRMInboxDashboard() {
     });
   }
 
+  function mapGroupToListItem(g, connectionId) {
+    return {
+      id: `${connectionId}::${g.whatsappGroupId}`,
+      connectionId,
+      chatId: g.whatsappGroupId,
+      name: g.title,
+      snippet: g.lastMessage || "",
+      time: formatChatTime(g.lastMessageAt),
+      unread: g.unreadCount || 0,
+      channel: "whatsapp",
+      isGroup: true,
+    };
+  }
+
+  function buildMentionItems(items, connectionId) {
+    const seen = new Set();
+    const result = [];
+    for (const m of items) {
+      if (seen.has(m.chatId)) continue;
+      seen.add(m.chatId);
+      result.push({
+        id: `${connectionId}::${m.chatId}`,
+        connectionId,
+        chatId: m.chatId,
+        name: m.groupTitle || m.chatId,
+        snippet: m.body || "",
+        time: formatChatTime(m.timestamp),
+        unread: 0,
+        channel: "whatsapp",
+        isGroup: !!m.isGroup,
+      });
+    }
+    return result;
+  }
+
   function mapMessage(m) {
     const time = new Date(m.timestamp * 1000).toLocaleTimeString([], {
       hour: "2-digit",
       minute: "2-digit",
     });
+    const senderName =
+      m.authorName || (m.author ? m.author.split("@")[0] : null);
     return {
       id: m.id,
-      from: m.fromMe ? effectiveAccountName || "Company" : activeChat.name,
+      from: m.fromMe
+        ? effectiveAccountName || "Company"
+        : senderName || activeChat.name,
       side: m.fromMe ? "out" : "in",
       time,
       timestamp: m.timestamp * 1000,
       text: m.body || "",
       meta: `Message ${m.fromMe ? "sent" : "received"} ${time}`,
-      type: m.type, // ← nuevo
-      hasMedia: m.hasMedia, // ← nuevo
-      serializedId: m.serializedId, // ← nuevo
+      type: m.type,
+      hasMedia: m.hasMedia,
+      serializedId: m.serializedId,
     };
   }
 
@@ -171,6 +225,8 @@ export default function CRMInboxDashboard() {
             time: formatChatTime(c.lastMessageAt),
             unread: c.unreadCount || 0,
             channel: "whatsapp",
+            isGroup: false, // -> sin los grupos
+            isNew: !!c.isNew,
           }))
           .sort(
             (a, b) => (b.lastMessageAtRaw ?? 0) - (a.lastMessageAtRaw ?? 0),
@@ -180,9 +236,32 @@ export default function CRMInboxDashboard() {
       .catch(() => setToast("Could not load chats."));
   }, [effectiveAccountId]);
 
-  const activeChat = chats.find((c) => c.id === activeChatId) ||
-    chats[0] || { name: "" };
-  const effectiveChatId = activeChatId ?? (chats[0] ? chats[0].id : null);
+  const listItems =
+    activeSection === "channels"
+      ? groups.map((g) => mapGroupToListItem(g, effectiveAccountId))
+      : activeSection === "mentions"
+        ? buildMentionItems(mentions, effectiveAccountId)
+        : activeFilter === "new"
+          ? chats.filter((c) => c.isNew)
+          : chats;
+
+  const sectionTitle =
+    activeSection === "channels"
+      ? "Channels"
+      : activeSection === "mentions"
+        ? "Mentions"
+        : activeFilter === "new"
+          ? "New"
+          : "All";
+
+  const unreadTotal = chats.reduce((sum, c) => sum + (c.unread || 0), 0);
+  const newCount = chats.filter((c) => c.isNew).length;
+
+  const activeChat = listItems.find((c) => c.id === activeChatId) ||
+    listItems[0] || { name: "" };
+  const effectiveChatId =
+    activeChatId ??
+    (activeFilter === "new" ? null : listItems[0] ? listItems[0].id : null);
   const effectiveChatIdRef = useRef(effectiveChatId);
   useEffect(() => {
     effectiveChatIdRef.current = effectiveChatId;
@@ -215,6 +294,40 @@ export default function CRMInboxDashboard() {
         ),
       )
       .catch(() => setToast("Could not load messages."));
+
+    // marcar como leído
+    if (activeChat.unread > 0) {
+      apiFetch(
+        `/whatsapp/mark-as-read?connectionId=${sessionId}&chatId=${encodeURIComponent(chatId)}`,
+        { method: "POST" },
+      ).catch(() => {});
+
+      if (activeChat.isGroup) {
+        setGroups((prev) =>
+          prev.map((g) =>
+            g.whatsappGroupId === chatId ? { ...g, unreadCount: 0 } : g,
+          ),
+        );
+      } else {
+        setChats((prev) =>
+          prev.map((c) => (c.id === effectiveChatId ? { ...c, unread: 0 } : c)),
+        );
+      }
+    }
+
+    // sacar de "New"
+    if (!activeChat.isGroup && activeChat.isNew) {
+      apiFetch(
+        `/whatsapp/chats/${encodeURIComponent(chatId)}/seen?connectionId=${sessionId}`,
+        { method: "POST" },
+      ).catch(() => {});
+      setChats((prev) =>
+        prev.map((c) =>
+          c.id === effectiveChatId ? { ...c, isNew: false } : c,
+        ),
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [effectiveChatId]);
 
   function upsertChatFromMessage(payload) {
@@ -248,21 +361,37 @@ export default function CRMInboxDashboard() {
               : Date.now(),
             text: payload.text,
             meta: `Message ${payload.fromMe ? "sent" : "received"} just now`,
-            type: payload.type, // ← nuevo
-            hasMedia: payload.hasMedia, // ← nuevo
-            serializedId: payload.serializedId, // ← nuevo
+            type: payload.type,
+            hasMedia: payload.hasMedia,
+            serializedId: payload.serializedId,
           },
         ].sort((a, b) => a.timestamp - b.timestamp),
       );
     }
+
+    const time = new Date().toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    if (payload.isGroup) {
+      setGroups((prev) => {
+        const idx = prev.findIndex((g) => g.whatsappGroupId === payload.chatId);
+        if (idx === -1) return prev; // grupo aún no sincronizado, lo trae el próximo sync
+        const updated = [...prev];
+        updated[idx] = {
+          ...updated[idx],
+          lastMessage: payload.text,
+          unreadCount: isActive ? 0 : (updated[idx].unreadCount || 0) + 1,
+        };
+        const [group] = updated.splice(idx, 1);
+        return [group, ...updated];
+      });
+      return;
+    }
+
     setChats((prev) => {
       const idx = prev.findIndex((c) => c.id === compositeId);
-      const time = new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-      const isActive = compositeId === effectiveChatIdRef.current;
-
       if (idx === -1) {
         return [
           {
@@ -274,6 +403,8 @@ export default function CRMInboxDashboard() {
             time,
             unread: isActive ? 0 : 1,
             channel: "whatsapp",
+            isGroup: false,
+            isNew: false,
           },
           ...prev,
         ];
@@ -313,6 +444,8 @@ export default function CRMInboxDashboard() {
               time: "",
               unread: payload.unreadCount || 0,
               channel: "whatsapp",
+              isGroup: false,
+              isNew: true,
             },
             ...prev,
           ],
@@ -371,6 +504,17 @@ export default function CRMInboxDashboard() {
     setToast(`Product "${product.name}" added to the library.`);
   }
 
+  function handleFilterChange(key) {
+    setActiveSection("chats");
+    setActiveChatId(null);
+    setActiveFilter(key);
+  }
+
+  function handleSectionChange(key) {
+    setActiveSection((prev) => (prev === key ? "chats" : key)); // click de nuevo = volver a Chats
+    setActiveChatId(null);
+  }
+
   return (
     <div className="h-screen w-full overflow-x-auto bg-neutral-100 font-sans text-neutral-900">
       <div style={{ minWidth: "1200px" }} className="flex h-full">
@@ -380,8 +524,12 @@ export default function CRMInboxDashboard() {
           <div className="flex min-h-0 flex-1 overflow-hidden">
             <NavSidebar
               effectiveAccountName={effectiveAccountName}
+              activeSection={activeSection}
+              onSectionChange={handleSectionChange}
               activeFilter={activeFilter}
-              onFilterChange={setActiveFilter}
+              onFilterChange={handleFilterChange}
+              unreadTotal={unreadTotal}
+              newCount={newCount}
               negotiationsOpen={negotiationsOpen}
               onToggleNegotiations={() => setNegotiationsOpen((v) => !v)}
               onAddUser={() => setShowAddUserModal(true)}
@@ -396,7 +544,8 @@ export default function CRMInboxDashboard() {
             />
 
             <ChatList
-              chats={chats}
+              title={sectionTitle}
+              chats={listItems}
               effectiveChatId={effectiveChatId}
               onSelectChat={setActiveChatId}
             />

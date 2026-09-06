@@ -4,12 +4,17 @@ import { Menu, Search } from "lucide-react";
 import { Avatar } from "@/components/inbox/Avatar";
 import { ChannelBadge } from "@/components/inbox/ChannelBadge";
 
-export function ChatList({ chats, effectiveChatId, onSelectChat }) {
+export function ChatList({
+  chats,
+  effectiveChatId,
+  onSelectChat,
+  title = "All",
+}) {
   return (
     <div className="flex h-full w-80 flex-col border-r border-neutral-200 bg-white">
       <div className="flex items-center gap-3 px-4 pt-5">
         <Menu className="h-4 w-4 text-neutral-400" />
-        <h2 className="text-sm font-semibold text-neutral-700">All</h2>
+        <h2 className="text-sm font-semibold text-neutral-700">{title}</h2>
       </div>
       <div className="px-4 pt-3">
         <div className="flex items-center gap-2 rounded-xl bg-neutral-100 px-3 py-2">
