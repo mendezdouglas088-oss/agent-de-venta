@@ -62,6 +62,8 @@ export default function CRMInboxDashboard() {
   const [chats, setChats] = useState([]);
   const [activeSection, setActiveSection] = useState("chats"); // "chats" | "channels" | "mentions"
   const [mentions, setMentions] = useState([]);
+  const [showNavSidebar, setShowNavSidebar] = useState(true);
+  const [showProfileSidebar, setShowProfileSidebar] = useState(false);
 
   function fetchAccounts() {
     apiFetch("/whatsapp-connections")
@@ -568,7 +570,7 @@ export default function CRMInboxDashboard() {
         <Sidebar onOpenProducts={() => setShowLibrary(true)} />
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
           <TopNav />
-          <div className="flex min-h-0 flex-1 overflow-hidden">
+          <div className="relative flex min-h-0 flex-1 overflow-hidden">
             <NavSidebar
               effectiveAccountName={effectiveAccountName}
               activeSection={activeSection}
@@ -588,6 +590,8 @@ export default function CRMInboxDashboard() {
                   setShowConnectionModal(true);
                 }
               }}
+              open={showNavSidebar}
+              onClose={() => setShowNavSidebar(false)}
             />
 
             <ChatList
@@ -595,6 +599,8 @@ export default function CRMInboxDashboard() {
               chats={listItems}
               effectiveChatId={effectiveChatId}
               onSelectChat={setActiveChatId}
+              navOpen={showNavSidebar}
+              onToggleNav={() => setShowNavSidebar((v) => !v)}
             />
 
             <ChatView
@@ -605,9 +611,15 @@ export default function CRMInboxDashboard() {
               onMessageSent={(msg) => setMessages((prev) => [...prev, msg])}
               isTyping={typingChatId === activeChat?.id}
               effectiveAccountName={effectiveAccountName}
+              profileOpen={showProfileSidebar}
+              onToggleProfile={() => setShowProfileSidebar((v) => !v)}
             />
 
-            <ProfileSidebar activeChat={activeChat} />
+            <ProfileSidebar
+              activeChat={activeChat}
+              open={showProfileSidebar}
+              onClose={() => setShowProfileSidebar(false)}
+            />
           </div>
         </div>
       </div>

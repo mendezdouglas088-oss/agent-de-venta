@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   UserPlus,
   Bookmark,
+  FileUser,
   Inbox,
   Paperclip,
   ExternalLink,
@@ -32,6 +33,8 @@ export function ChatView({
   onReply,
   onForward,
   effectiveAccountName,
+  profileOpen,
+  onToggleProfile,
 }) {
   const [bookmarked, setBookmarked] = useState(false);
   const [messageDraft, setMessageDraft] = useState("");
@@ -186,6 +189,15 @@ export function ChatView({
               className="h-4 w-4"
               fill={bookmarked ? "currentColor" : "none"}
             />
+          </button>
+          <button
+            type="button"
+            onClick={onToggleProfile}
+            title="Toggle contact panel"
+            aria-pressed={profileOpen}
+            className={`rounded-lg p-1.5 ${profileOpen ? "bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-200" : "text-neutral-400 dark:text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-600 dark:hover:text-neutral-300"}`}
+          >
+            <FileUser className="h-4 w-4" />
           </button>
         </div>
       </div>

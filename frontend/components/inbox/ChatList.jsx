@@ -9,11 +9,21 @@ export function ChatList({
   effectiveChatId,
   onSelectChat,
   title = "All",
+  onToggleNav,
+  navOpen,
 }) {
   return (
     <div className="flex h-full w-80 flex-col border-r border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900">
       <div className="flex items-center gap-3 px-4 pt-5">
-        <Menu className="h-4 w-4 text-neutral-400 dark:text-neutral-500" />
+        <button
+          type="button"
+          onClick={onToggleNav}
+          title="Toggle sidebar"
+          aria-pressed={navOpen}
+          className="rounded-lg p-1 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:hover:text-neutral-300"
+        >
+          <Menu className="h-4 w-4" />
+        </button>
         <h2 className="text-sm font-semibold text-neutral-700 dark:text-neutral-200">{title}</h2>
       </div>
       <div className="px-4 pt-3">
