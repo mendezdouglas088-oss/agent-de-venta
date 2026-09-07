@@ -70,7 +70,7 @@ export function MediaAttachment({
 
   if (!serializedId) {
     return (
-      <div className="mt-1.5 flex items-center gap-1.5 rounded-lg bg-neutral-100 px-2.5 py-1.5 text-xs text-neutral-400">
+      <div className="mt-1.5 flex items-center gap-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 px-2.5 py-1.5 text-xs text-neutral-400 dark:text-neutral-500">
         <AlertCircle className="h-3.5 w-3.5" />
         Media no disponible (mensaje anterior a la actualización)
       </div>
@@ -79,7 +79,7 @@ export function MediaAttachment({
 
   if (state === "unavailable") {
     return (
-      <div className="mt-1.5 flex items-center gap-1.5 rounded-lg bg-neutral-100 px-2.5 py-1.5 text-xs text-neutral-400">
+      <div className="mt-1.5 flex items-center gap-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 px-2.5 py-1.5 text-xs text-neutral-400 dark:text-neutral-500">
         <AlertCircle className="h-3.5 w-3.5" />
         El archivo ya no está disponible
       </div>
@@ -91,7 +91,7 @@ export function MediaAttachment({
       <button
         type="button"
         onClick={loadMedia}
-        className="mt-1.5 flex items-center gap-1.5 rounded-lg bg-red-50 px-2.5 py-1.5 text-xs text-red-500 hover:bg-red-100"
+        className="mt-1.5 flex items-center gap-1.5 rounded-lg bg-red-50 dark:bg-red-500/10 px-2.5 py-1.5 text-xs text-red-500 hover:bg-red-100 dark:hover:bg-red-500/15"
       >
         <AlertCircle className="h-3.5 w-3.5" />
         Error al cargar, reintentar
@@ -103,8 +103,8 @@ export function MediaAttachment({
   if (type === "image" || type === "sticker") {
     if (state !== "ready") {
       return (
-        <div className="mt-1.5 flex h-32 w-48 items-center justify-center rounded-lg bg-neutral-100">
-          <Loader2 className="h-4 w-4 animate-spin text-neutral-400" />
+        <div className="mt-1.5 flex h-32 w-48 items-center justify-center rounded-lg bg-neutral-100 dark:bg-neutral-800">
+          <Loader2 className="h-4 w-4 animate-spin text-neutral-400 dark:text-neutral-500" />
         </div>
       );
     }
@@ -132,7 +132,7 @@ export function MediaAttachment({
         type="button"
         onClick={loadMedia}
         disabled={state === "loading"}
-        className="mt-1.5 flex items-center gap-1.5 rounded-lg bg-neutral-100 px-3 py-2 text-xs text-neutral-600 hover:bg-neutral-200"
+        className="mt-1.5 flex items-center gap-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 px-3 py-2 text-xs text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700"
       >
         {state === "loading" ? (
           <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -153,7 +153,7 @@ export function MediaAttachment({
         type="button"
         onClick={loadMedia}
         disabled={state === "loading"}
-        className="mt-1.5 flex items-center gap-1.5 rounded-lg bg-neutral-100 px-3 py-2 text-xs text-neutral-600 hover:bg-neutral-200"
+        className="mt-1.5 flex items-center gap-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 px-3 py-2 text-xs text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700"
       >
         {state === "loading" ? (
           <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -170,7 +170,7 @@ export function MediaAttachment({
     <a
       href={mediaUrl}
       download={filename || "archivo"}
-      className="mt-1.5 flex items-center gap-1.5 rounded-lg bg-neutral-100 px-3 py-2 text-xs text-neutral-600 hover:bg-neutral-200"
+      className="mt-1.5 flex items-center gap-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 px-3 py-2 text-xs text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700"
     >
       <FileText className="h-3.5 w-3.5" />
       {filename || "Descargar archivo"}
@@ -180,7 +180,7 @@ export function MediaAttachment({
       type="button"
       onClick={loadMedia}
       disabled={state === "loading"}
-      className="mt-1.5 flex items-center gap-1.5 rounded-lg bg-neutral-100 px-3 py-2 text-xs text-neutral-600 hover:bg-neutral-200"
+      className="mt-1.5 flex items-center gap-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 px-3 py-2 text-xs text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700"
     >
       {state === "loading" ? (
         <Loader2 className="h-3.5 w-3.5 animate-spin" />

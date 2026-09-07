@@ -26,14 +26,14 @@ const INITIAL_PRODUCTS = [
     id: 1,
     name: "Wireless Headset",
     price: "$59.00",
-    color: "bg-emerald-100",
+    color: "bg-emerald-100 dark:bg-emerald-500/15",
     imageUrl: "",
   },
   {
     id: 2,
     name: "Desk Lamp",
     price: "$24.00",
-    color: "bg-amber-100",
+    color: "bg-amber-100 dark:bg-amber-500/15",
     imageUrl: "",
   },
 ];
@@ -563,7 +563,7 @@ export default function CRMInboxDashboard() {
   }
 
   return (
-    <div className="h-screen w-full overflow-x-auto bg-neutral-100 font-sans text-neutral-900">
+    <div className="h-screen w-full overflow-x-auto bg-neutral-100 font-sans text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
       <div style={{ minWidth: "1200px" }} className="flex h-full">
         <Sidebar onOpenProducts={() => setShowLibrary(true)} />
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
@@ -703,7 +703,7 @@ export default function CRMInboxDashboard() {
       )}
 
       {toast && (
-        <div className="fixed bottom-6 right-6 z-50 rounded-xl bg-neutral-900 px-4 py-3 text-sm text-white shadow-xl">
+        <div className="fixed bottom-6 right-6 z-50 rounded-xl bg-neutral-900 dark:bg-emerald-600 px-4 py-3 text-sm text-white shadow-xl">
           {toast}
         </div>
       )}

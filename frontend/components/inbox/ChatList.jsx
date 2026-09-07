@@ -11,17 +11,17 @@ export function ChatList({
   title = "All",
 }) {
   return (
-    <div className="flex h-full w-80 flex-col border-r border-neutral-200 bg-white">
+    <div className="flex h-full w-80 flex-col border-r border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900">
       <div className="flex items-center gap-3 px-4 pt-5">
-        <Menu className="h-4 w-4 text-neutral-400" />
-        <h2 className="text-sm font-semibold text-neutral-700">{title}</h2>
+        <Menu className="h-4 w-4 text-neutral-400 dark:text-neutral-500" />
+        <h2 className="text-sm font-semibold text-neutral-700 dark:text-neutral-200">{title}</h2>
       </div>
       <div className="px-4 pt-3">
-        <div className="flex items-center gap-2 rounded-xl bg-neutral-100 px-3 py-2">
-          <Search className="h-3.5 w-3.5 text-neutral-400" />
+        <div className="flex items-center gap-2 rounded-xl bg-neutral-100 dark:bg-neutral-800 px-3 py-2">
+          <Search className="h-3.5 w-3.5 text-neutral-400 dark:text-neutral-500" />
           <input
             placeholder="Search by chats and people"
-            className="w-full bg-transparent text-xs text-neutral-600 placeholder-neutral-400 outline-none"
+            className="w-full bg-transparent text-xs text-neutral-600 dark:text-neutral-300 placeholder-neutral-400 dark:placeholder-neutral-500 outline-none"
           />
         </div>
       </div>
@@ -36,8 +36,8 @@ export function ChatList({
               onClick={() => onSelectChat(chat.id)}
               className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-left ${
                 isActive
-                  ? "border-emerald-200 bg-emerald-50"
-                  : "border-transparent hover:bg-neutral-50"
+                  ? "border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-500/10"
+                  : "border-transparent hover:bg-neutral-50 dark:hover:bg-neutral-800"
               }`}
             >
               <div className="relative shrink-0">
@@ -46,15 +46,15 @@ export function ChatList({
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between">
-                  <span className="truncate text-sm font-medium text-neutral-800">
+                  <span className="truncate text-sm font-medium text-neutral-800 dark:text-neutral-200">
                     {chat.name}
                   </span>
-                  <span className="shrink-0 text-xs text-neutral-400">
+                  <span className="shrink-0 text-xs text-neutral-400 dark:text-neutral-500">
                     {chat.time}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="truncate text-xs text-neutral-400">
+                  <span className="truncate text-xs text-neutral-400 dark:text-neutral-500">
                     {chat.snippet}
                   </span>
                   {chat.unread > 0 && (

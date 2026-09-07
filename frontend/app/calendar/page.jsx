@@ -43,37 +43,37 @@ const GRID_START_MINUTES = HOURS[0] * 60;
 const COLORS = [
   {
     key: "emerald",
-    bg: "bg-emerald-100",
-    border: "border-emerald-300",
-    text: "text-emerald-700",
+    bg: "bg-emerald-100 dark:bg-emerald-500/15",
+    border: "border-emerald-300 dark:border-emerald-700",
+    text: "text-emerald-700 dark:text-emerald-400",
     dot: "bg-emerald-500",
   },
   {
     key: "sky",
-    bg: "bg-sky-100",
-    border: "border-sky-300",
-    text: "text-sky-700",
+    bg: "bg-sky-100 dark:bg-sky-500/15",
+    border: "border-sky-300 dark:border-sky-700",
+    text: "text-sky-700 dark:text-sky-400",
     dot: "bg-sky-500",
   },
   {
     key: "violet",
-    bg: "bg-violet-100",
-    border: "border-violet-300",
-    text: "text-violet-700",
+    bg: "bg-violet-100 dark:bg-violet-500/15",
+    border: "border-violet-300 dark:border-violet-700",
+    text: "text-violet-700 dark:text-violet-400",
     dot: "bg-violet-500",
   },
   {
     key: "amber",
-    bg: "bg-amber-100",
-    border: "border-amber-300",
-    text: "text-amber-700",
+    bg: "bg-amber-100 dark:bg-amber-500/15",
+    border: "border-amber-300 dark:border-amber-700",
+    text: "text-amber-700 dark:text-amber-400",
     dot: "bg-amber-500",
   },
   {
     key: "rose",
-    bg: "bg-rose-100",
-    border: "border-rose-300",
-    text: "text-rose-700",
+    bg: "bg-rose-100 dark:bg-rose-500/15",
+    border: "border-rose-300 dark:border-rose-700",
+    text: "text-rose-700 dark:text-rose-400",
     dot: "bg-rose-500",
   },
 ];
@@ -216,21 +216,21 @@ function MiniCalendar({
   return (
     <div>
       <div className="mb-2 flex items-center justify-between">
-        <span className="text-sm font-medium text-neutral-700">
+        <span className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
           {monthLabel}
         </span>
         <div className="flex items-center gap-1">
           <button
             type="button"
             onClick={onPrev}
-            className="rounded-lg p-1 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600"
+            className="rounded-lg p-1 text-neutral-400 dark:text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-600 dark:hover:text-neutral-300"
           >
             <ChevronLeft className="h-3.5 w-3.5" />
           </button>
           <button
             type="button"
             onClick={onNext}
-            className="rounded-lg p-1 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600"
+            className="rounded-lg p-1 text-neutral-400 dark:text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-600 dark:hover:text-neutral-300"
           >
             <ChevronRight className="h-3.5 w-3.5" />
           </button>
@@ -238,7 +238,7 @@ function MiniCalendar({
       </div>
       <div className="grid grid-cols-7 gap-y-1 text-center">
         {WEEKDAY_LABELS.map((w) => (
-          <span key={w} className="text-xs text-neutral-300">
+          <span key={w} className="text-xs text-neutral-300 dark:text-neutral-600">
             {w[0]}
           </span>
         ))}
@@ -258,10 +258,10 @@ function MiniCalendar({
               <span
                 className={`flex h-6 w-6 items-center justify-center rounded-full text-xs ${
                   isSelected
-                    ? "bg-neutral-900 text-white"
+                    ? "bg-neutral-900 dark:bg-emerald-600 text-white"
                     : isToday
-                      ? "bg-emerald-100 font-medium text-emerald-700"
-                      : "text-neutral-600 hover:bg-neutral-100"
+                      ? "bg-emerald-100 dark:bg-emerald-500/15 font-medium text-emerald-700 dark:text-emerald-400"
+                      : "text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800"
                 }`}
               >
                 {day}
@@ -279,12 +279,12 @@ function MiniCalendar({
 
 function TimeGrid({ days, events, onSlotClick, onEventClick }) {
   return (
-    <div className="flex overflow-x-auto rounded-2xl border border-neutral-200 bg-white">
-      <div className="w-16 shrink-0 border-r border-neutral-100 pt-10">
+    <div className="flex overflow-x-auto rounded-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900">
+      <div className="w-16 shrink-0 border-r border-neutral-100 dark:border-neutral-800 pt-10">
         {HOURS.map((h) => (
           <div
             key={h}
-            className="flex h-16 items-start justify-end pr-2 text-xs text-neutral-400"
+            className="flex h-16 items-start justify-end pr-2 text-xs text-neutral-400 dark:text-neutral-500"
           >
             {formatHour(h)}
           </div>
@@ -298,14 +298,14 @@ function TimeGrid({ days, events, onSlotClick, onEventClick }) {
           return (
             <div
               key={dateKey}
-              className="flex-1 border-r border-neutral-100 last:border-r-0"
+              className="flex-1 border-r border-neutral-100 dark:border-neutral-800 last:border-r-0"
             >
-              <div className="flex h-10 flex-col items-center justify-center border-b border-neutral-100">
-                <span className="text-xs text-neutral-400">
+              <div className="flex h-10 flex-col items-center justify-center border-b border-neutral-100 dark:border-neutral-800">
+                <span className="text-xs text-neutral-400 dark:text-neutral-500">
                   {WEEKDAY_LABELS[day.getDay()]}
                 </span>
                 <span
-                  className={`mt-0.5 flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${isToday ? "bg-neutral-900 text-white" : "text-neutral-700"}`}
+                  className={`mt-0.5 flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${isToday ? "bg-neutral-900 dark:bg-emerald-600 text-white" : "text-neutral-700 dark:text-neutral-200"}`}
                 >
                   {day.getDate()}
                 </span>
@@ -319,7 +319,7 @@ function TimeGrid({ days, events, onSlotClick, onEventClick }) {
                     key={h}
                     type="button"
                     onClick={() => onSlotClick(dateKey, h)}
-                    className="block h-16 w-full border-b border-neutral-100 hover:bg-neutral-50"
+                    className="block h-16 w-full border-b border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800"
                   />
                 ))}
                 {dayEvents.map((ev) => {
@@ -360,12 +360,12 @@ function MonthGrid({ year, month, events, onDayClick }) {
   for (let d = 1; d <= daysInMonth; d++) cells.push(d);
 
   return (
-    <div className="rounded-2xl border border-neutral-200 bg-white p-4">
+    <div className="rounded-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-4">
       <div className="grid grid-cols-7 gap-1.5">
         {WEEKDAY_LABELS.map((w) => (
           <div
             key={w}
-            className="pb-1 text-center text-xs font-medium text-neutral-400"
+            className="pb-1 text-center text-xs font-medium text-neutral-400 dark:text-neutral-500"
           >
             {w}
           </div>
@@ -381,9 +381,9 @@ function MonthGrid({ year, month, events, onDayClick }) {
               key={dateKey}
               type="button"
               onClick={() => onDayClick(date)}
-              className={`flex h-24 flex-col items-start gap-1 rounded-xl border p-1.5 text-left ${isToday ? "border-emerald-300 bg-emerald-50" : "border-neutral-100 hover:bg-neutral-50"}`}
+              className={`flex h-24 flex-col items-start gap-1 rounded-xl border p-1.5 text-left ${isToday ? "border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-500/10" : "border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800"}`}
             >
-              <span className="text-xs font-medium text-neutral-600">
+              <span className="text-xs font-medium text-neutral-600 dark:text-neutral-300">
                 {day}
               </span>
               <div className="w-full space-y-0.5">
@@ -399,7 +399,7 @@ function MonthGrid({ year, month, events, onDayClick }) {
                   );
                 })}
                 {dayEvents.length > 2 && (
-                  <span className="text-xs text-neutral-400">
+                  <span className="text-xs text-neutral-400 dark:text-neutral-500">
                     +{dayEvents.length - 2} more
                   </span>
                 )}
@@ -475,16 +475,16 @@ function EventModal({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl"
+        className="w-full max-w-sm rounded-2xl bg-white dark:bg-neutral-900 p-6 shadow-2xl"
       >
         <div className="mb-4 flex items-start justify-between">
-          <h2 className="text-base font-semibold text-neutral-900">
+          <h2 className="text-base font-semibold text-neutral-900 dark:text-neutral-50">
             {initialData ? "Edit schedule" : "Add schedule"}
           </h2>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600"
+            className="rounded-lg p-1.5 text-neutral-400 dark:text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-600 dark:hover:text-neutral-300"
           >
             <X className="h-4 w-4" />
           </button>
@@ -495,14 +495,14 @@ function EventModal({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="New event title"
-            className="w-full rounded-xl border border-neutral-200 px-3 py-2 text-sm text-neutral-700 placeholder-neutral-400 outline-none focus:border-neutral-400"
+            className="w-full rounded-xl border border-neutral-200 dark:border-neutral-700 px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-500 outline-none focus:border-neutral-400 dark:focus:border-neutral-500"
           />
 
           <input
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="w-full rounded-xl border border-neutral-200 px-3 py-2 text-sm text-neutral-700 outline-none focus:border-neutral-400"
+            className="w-full rounded-xl border border-neutral-200 dark:border-neutral-700 px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 outline-none focus:border-neutral-400 dark:focus:border-neutral-500"
           />
 
           <div className="flex items-center gap-2">
@@ -510,24 +510,24 @@ function EventModal({
               type="time"
               value={startTime}
               onChange={(e) => setStartTime(e.target.value)}
-              className="flex-1 rounded-xl border border-neutral-200 px-3 py-2 text-sm text-neutral-700 outline-none focus:border-neutral-400"
+              className="flex-1 rounded-xl border border-neutral-200 dark:border-neutral-700 px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 outline-none focus:border-neutral-400 dark:focus:border-neutral-500"
             />
-            <ArrowRight className="h-3.5 w-3.5 shrink-0 text-neutral-300" />
+            <ArrowRight className="h-3.5 w-3.5 shrink-0 text-neutral-300 dark:text-neutral-600" />
             <input
               type="time"
               value={endTime}
               onChange={(e) => setEndTime(e.target.value)}
-              className="flex-1 rounded-xl border border-neutral-200 px-3 py-2 text-sm text-neutral-700 outline-none focus:border-neutral-400"
+              className="flex-1 rounded-xl border border-neutral-200 dark:border-neutral-700 px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 outline-none focus:border-neutral-400 dark:focus:border-neutral-500"
             />
           </div>
 
-          <div className="flex items-center gap-2 rounded-xl border border-neutral-200 px-3 py-2">
-            <UserPlus className="h-3.5 w-3.5 shrink-0 text-neutral-400" />
+          <div className="flex items-center gap-2 rounded-xl border border-neutral-200 dark:border-neutral-700 px-3 py-2">
+            <UserPlus className="h-3.5 w-3.5 shrink-0 text-neutral-400 dark:text-neutral-500" />
             <input
               value={contactName}
               onChange={(e) => setContactName(e.target.value)}
               placeholder="Add contact (optional)"
-              className="w-full text-sm text-neutral-700 placeholder-neutral-400 outline-none"
+              className="w-full text-sm text-neutral-700 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-500 outline-none"
             />
           </div>
 
@@ -535,33 +535,33 @@ function EventModal({
             <button
               type="button"
               onClick={() => setChannel("whatsapp")}
-              className={`flex-1 rounded-xl border px-3 py-1.5 text-xs font-medium ${channel === "whatsapp" ? "border-neutral-900 bg-neutral-900 text-white" : "border-neutral-200 text-neutral-600"}`}
+              className={`flex-1 rounded-xl border px-3 py-1.5 text-xs font-medium ${channel === "whatsapp" ? "border-neutral-900 dark:border-emerald-600 bg-neutral-900 dark:bg-emerald-600 text-white" : "border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300"}`}
             >
               WhatsApp
             </button>
             <button
               type="button"
               onClick={() => setChannel("telegram")}
-              className={`flex-1 rounded-xl border px-3 py-1.5 text-xs font-medium ${channel === "telegram" ? "border-neutral-900 bg-neutral-900 text-white" : "border-neutral-200 text-neutral-600"}`}
+              className={`flex-1 rounded-xl border px-3 py-1.5 text-xs font-medium ${channel === "telegram" ? "border-neutral-900 dark:border-emerald-600 bg-neutral-900 dark:bg-emerald-600 text-white" : "border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300"}`}
             >
               Telegram
             </button>
             <button
               type="button"
               onClick={() => setChannel("manual")}
-              className={`flex-1 rounded-xl border px-3 py-1.5 text-xs font-medium ${channel === "manual" ? "border-neutral-900 bg-neutral-900 text-white" : "border-neutral-200 text-neutral-600"}`}
+              className={`flex-1 rounded-xl border px-3 py-1.5 text-xs font-medium ${channel === "manual" ? "border-neutral-900 dark:border-emerald-600 bg-neutral-900 dark:bg-emerald-600 text-white" : "border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300"}`}
             >
               Manual
             </button>
           </div>
 
-          <div className="flex items-center gap-2 rounded-xl border border-neutral-200 px-3 py-2">
-            <Link2 className="h-3.5 w-3.5 shrink-0 text-neutral-400" />
+          <div className="flex items-center gap-2 rounded-xl border border-neutral-200 dark:border-neutral-700 px-3 py-2">
+            <Link2 className="h-3.5 w-3.5 shrink-0 text-neutral-400 dark:text-neutral-500" />
             <input
               value={link}
               onChange={(e) => setLink(e.target.value)}
               placeholder="Add meeting link (optional)"
-              className="w-full text-sm text-neutral-700 placeholder-neutral-400 outline-none"
+              className="w-full text-sm text-neutral-700 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-500 outline-none"
             />
           </div>
 
@@ -570,7 +570,7 @@ function EventModal({
             onChange={(e) => setDescription(e.target.value)}
             rows={2}
             placeholder="Add description"
-            className="w-full resize-none rounded-xl border border-neutral-200 p-3 text-sm text-neutral-700 placeholder-neutral-400 outline-none focus:border-neutral-400"
+            className="w-full resize-none rounded-xl border border-neutral-200 dark:border-neutral-700 p-3 text-sm text-neutral-700 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-500 outline-none focus:border-neutral-400 dark:focus:border-neutral-500"
           />
 
           <div className="flex items-center gap-2">
@@ -579,7 +579,7 @@ function EventModal({
                 key={c.key}
                 type="button"
                 onClick={() => setColor(c.key)}
-                className={`h-6 w-6 rounded-full ${c.dot} ${color === c.key ? "ring-2 ring-neutral-400 ring-offset-2" : ""}`}
+                className={`h-6 w-6 rounded-full ${c.dot} ${color === c.key ? "ring-2 ring-neutral-400 dark:ring-neutral-500 ring-offset-2 dark:ring-offset-neutral-900" : ""}`}
               />
             ))}
           </div>
@@ -590,7 +590,7 @@ function EventModal({
             <button
               type="button"
               onClick={() => onDelete(initialData.id)}
-              className="rounded-xl p-2 text-rose-500 hover:bg-rose-50"
+              className="rounded-xl p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10"
             >
               <Trash2 className="h-4 w-4" />
             </button>
@@ -601,7 +601,7 @@ function EventModal({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl px-4 py-2 text-sm font-medium text-neutral-500 hover:bg-neutral-100"
+              className="rounded-xl px-4 py-2 text-sm font-medium text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800"
             >
               Cancel
             </button>
@@ -609,7 +609,7 @@ function EventModal({
               type="button"
               onClick={handleSave}
               disabled={!title.trim() || !date}
-              className="rounded-xl bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-40"
+              className="rounded-xl bg-neutral-900 dark:bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 dark:hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-40"
             >
               Save
             </button>
@@ -721,22 +721,22 @@ export default function CalendarPage() {
   const eventDates = new Set(visibleEvents.map((e) => e.date));
 
   return (
-    <div className="h-screen w-full overflow-x-auto bg-neutral-100 font-sans text-neutral-900">
+    <div className="h-screen w-full overflow-x-auto bg-neutral-100 font-sans text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
       <div style={{ minWidth: "1300px" }} className="flex h-full">
         <Sidebar />
         <div className="flex flex-1 flex-col overflow-hidden">
           <TopNav />
           <div className="flex flex-1 overflow-hidden">
-            <div className="flex h-full w-64 shrink-0 flex-col overflow-y-auto border-r border-neutral-200 bg-white p-4">
+            <div className="flex h-full w-64 shrink-0 flex-col overflow-y-auto border-r border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-4">
               <div className="mb-5 flex items-center gap-2">
-                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-neutral-900 text-white">
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-neutral-900 dark:bg-emerald-600 text-white">
                   <CalendarDays className="h-4 w-4" />
                 </span>
                 <div>
-                  <p className="text-sm font-semibold text-neutral-900">
+                  <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-50">
                     CRM Calendar
                   </p>
-                  <p className="text-xs text-neutral-400">
+                  <p className="text-xs text-neutral-400 dark:text-neutral-500">
                     Appointments workspace
                   </p>
                 </div>
@@ -766,20 +766,20 @@ export default function CalendarPage() {
                 eventDates={eventDates}
               />
 
-              <p className="mb-2 mt-6 text-xs font-semibold uppercase tracking-wide text-neutral-300">
+              <p className="mb-2 mt-6 text-xs font-semibold uppercase tracking-wide text-neutral-300 dark:text-neutral-600">
                 My Calendars
               </p>
               <div className="space-y-1.5">
                 {CALENDAR_FILTERS.map((f) => (
                   <label
                     key={f.key}
-                    className="flex items-center gap-2.5 rounded-lg px-1 py-1 text-sm text-neutral-600 hover:bg-neutral-50"
+                    className="flex items-center gap-2.5 rounded-lg px-1 py-1 text-sm text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800"
                   >
                     <input
                       type="checkbox"
                       checked={activeFilters.includes(f.key)}
                       onChange={() => toggleFilter(f.key)}
-                      className="h-3.5 w-3.5 rounded accent-neutral-900"
+                      className="h-3.5 w-3.5 rounded accent-neutral-900 dark:accent-emerald-600"
                     />
                     <span className={`h-2 w-2 rounded-full ${f.dot}`} />
                     {f.label}
@@ -787,14 +787,14 @@ export default function CalendarPage() {
                 ))}
               </div>
 
-              <p className="mb-2 mt-6 text-xs font-semibold uppercase tracking-wide text-neutral-300">
+              <p className="mb-2 mt-6 text-xs font-semibold uppercase tracking-wide text-neutral-300 dark:text-neutral-600">
                 Categories
               </p>
               <div className="space-y-1.5">
                 {CATEGORIES.map((c) => (
                   <div
                     key={c.label}
-                    className="flex items-center gap-2.5 px-1 py-1 text-sm text-neutral-600"
+                    className="flex items-center gap-2.5 px-1 py-1 text-sm text-neutral-600 dark:text-neutral-300"
                   >
                     <span className={`h-2 w-2 rounded-full ${c.dot}`} />
                     {c.label}
@@ -806,13 +806,13 @@ export default function CalendarPage() {
             <div className="flex-1 overflow-y-auto p-6">
               <div className="mb-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <h1 className="text-lg font-semibold text-neutral-900">
+                  <h1 className="text-lg font-semibold text-neutral-900 dark:text-neutral-50">
                     {rangeLabel}
                   </h1>
                   <button
                     type="button"
                     onClick={goToday}
-                    className="rounded-lg border border-neutral-200 px-3 py-1 text-xs font-medium text-neutral-600 hover:bg-neutral-50"
+                    className="rounded-lg border border-neutral-200 dark:border-neutral-700 px-3 py-1 text-xs font-medium text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800"
                   >
                     Today
                   </button>
@@ -820,14 +820,14 @@ export default function CalendarPage() {
                     <button
                       type="button"
                       onClick={goPrev}
-                      className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600"
+                      className="rounded-lg p-1.5 text-neutral-400 dark:text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-600 dark:hover:text-neutral-300"
                     >
                       <ChevronLeft className="h-4 w-4" />
                     </button>
                     <button
                       type="button"
                       onClick={goNext}
-                      className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600"
+                      className="rounded-lg p-1.5 text-neutral-400 dark:text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-600 dark:hover:text-neutral-300"
                     >
                       <ChevronRight className="h-4 w-4" />
                     </button>
@@ -835,16 +835,16 @@ export default function CalendarPage() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <Search className="h-4 w-4 text-neutral-400" />
-                  <HelpCircle className="h-4 w-4 text-neutral-400" />
-                  <Settings className="h-4 w-4 text-neutral-400" />
-                  <div className="flex items-center rounded-xl bg-neutral-100 p-1">
+                  <Search className="h-4 w-4 text-neutral-400 dark:text-neutral-500" />
+                  <HelpCircle className="h-4 w-4 text-neutral-400 dark:text-neutral-500" />
+                  <Settings className="h-4 w-4 text-neutral-400 dark:text-neutral-500" />
+                  <div className="flex items-center rounded-xl bg-neutral-100 dark:bg-neutral-800 p-1">
                     {["day", "week", "month"].map((mode) => (
                       <button
                         key={mode}
                         type="button"
                         onClick={() => setViewMode(mode)}
-                        className={`rounded-lg px-3 py-1.5 text-xs font-medium capitalize ${viewMode === mode ? "bg-white text-neutral-900 shadow-sm" : "text-neutral-500"}`}
+                        className={`rounded-lg px-3 py-1.5 text-xs font-medium capitalize ${viewMode === mode ? "bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-50 shadow-sm" : "text-neutral-500 dark:text-neutral-400"}`}
                       >
                         {mode}
                       </button>
@@ -853,7 +853,7 @@ export default function CalendarPage() {
                   <button
                     type="button"
                     onClick={() => openNewAt(selectedKey, 9)}
-                    className="flex items-center gap-1.5 rounded-xl bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800"
+                    className="flex items-center gap-1.5 rounded-xl bg-neutral-900 dark:bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 dark:hover:bg-emerald-500"
                   >
                     <Plus className="h-4 w-4" />
                     New

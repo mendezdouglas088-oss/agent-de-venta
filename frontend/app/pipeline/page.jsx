@@ -114,19 +114,19 @@ function LeadCard({ lead, onDragStart }) {
     <div
       draggable
       onDragStart={(e) => onDragStart(e, lead.id)}
-      className="cursor-grab space-y-2 rounded-xl border border-neutral-200 bg-white p-3 shadow-sm active:cursor-grabbing"
+      className="cursor-grab space-y-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-3 shadow-sm active:cursor-grabbing"
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Avatar name={lead.name} size="h-7 w-7" />
-          <span className="text-sm font-medium text-neutral-800">
+          <span className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
             {lead.name}
           </span>
         </div>
         <ChannelIcon channel={lead.channel} />
       </div>
-      <p className="text-sm font-semibold text-neutral-900">{lead.value}</p>
-      <span className="inline-block rounded-full bg-neutral-100 px-2 py-0.5 text-xs text-neutral-500">
+      <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-50">{lead.value}</p>
+      <span className="inline-block rounded-full bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 text-xs text-neutral-500 dark:text-neutral-400">
         {lead.source}
       </span>
     </div>
@@ -159,14 +159,14 @@ function NewLeadModal({ defaultStage, onClose, onCreate }) {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl"
+        className="w-full max-w-sm rounded-2xl bg-white dark:bg-neutral-900 p-6 shadow-2xl"
       >
         <div className="mb-5 flex items-start justify-between">
-          <h2 className="text-base font-semibold text-neutral-900">New lead</h2>
+          <h2 className="text-base font-semibold text-neutral-900 dark:text-neutral-50">New lead</h2>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600"
+            className="rounded-lg p-1.5 text-neutral-400 dark:text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-600 dark:hover:text-neutral-300"
           >
             <X className="h-4 w-4" />
           </button>
@@ -174,33 +174,33 @@ function NewLeadModal({ defaultStage, onClose, onCreate }) {
 
         <div className="space-y-4">
           <div>
-            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-neutral-400">
+            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-neutral-400 dark:text-neutral-500">
               Name
             </label>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Nayla Barghese"
-              className="w-full rounded-xl border border-neutral-200 px-3 py-2 text-sm text-neutral-700 placeholder-neutral-400 outline-none focus:border-neutral-400"
+              className="w-full rounded-xl border border-neutral-200 dark:border-neutral-700 px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-500 outline-none focus:border-neutral-400 dark:focus:border-neutral-500"
             />
           </div>
 
           <div>
-            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-neutral-400">
+            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-neutral-400 dark:text-neutral-500">
               Channel
             </label>
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={() => setChannel("whatsapp")}
-                className={`flex-1 rounded-xl border px-3 py-2 text-sm font-medium ${channel === "whatsapp" ? "border-neutral-900 bg-neutral-900 text-white" : "border-neutral-200 text-neutral-600"}`}
+                className={`flex-1 rounded-xl border px-3 py-2 text-sm font-medium ${channel === "whatsapp" ? "border-neutral-900 dark:border-emerald-600 bg-neutral-900 dark:bg-emerald-600 text-white" : "border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300"}`}
               >
                 WhatsApp
               </button>
               <button
                 type="button"
                 onClick={() => setChannel("telegram")}
-                className={`flex-1 rounded-xl border px-3 py-2 text-sm font-medium ${channel === "telegram" ? "border-neutral-900 bg-neutral-900 text-white" : "border-neutral-200 text-neutral-600"}`}
+                className={`flex-1 rounded-xl border px-3 py-2 text-sm font-medium ${channel === "telegram" ? "border-neutral-900 dark:border-emerald-600 bg-neutral-900 dark:bg-emerald-600 text-white" : "border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300"}`}
               >
                 Telegram
               </button>
@@ -208,25 +208,25 @@ function NewLeadModal({ defaultStage, onClose, onCreate }) {
           </div>
 
           <div>
-            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-neutral-400">
+            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-neutral-400 dark:text-neutral-500">
               Deal value
             </label>
             <input
               value={value}
               onChange={(e) => setValue(e.target.value)}
               placeholder="$0"
-              className="w-full rounded-xl border border-neutral-200 px-3 py-2 text-sm text-neutral-700 placeholder-neutral-400 outline-none focus:border-neutral-400"
+              className="w-full rounded-xl border border-neutral-200 dark:border-neutral-700 px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-500 outline-none focus:border-neutral-400 dark:focus:border-neutral-500"
             />
           </div>
 
           <div>
-            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-neutral-400">
+            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-neutral-400 dark:text-neutral-500">
               Source
             </label>
             <select
               value={source}
               onChange={(e) => setSource(e.target.value)}
-              className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-700 outline-none focus:border-neutral-400"
+              className="w-full rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 outline-none focus:border-neutral-400 dark:focus:border-neutral-500"
             >
               {SOURCES.map((s) => (
                 <option key={s} value={s}>
@@ -237,7 +237,7 @@ function NewLeadModal({ defaultStage, onClose, onCreate }) {
           </div>
 
           <div>
-            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-neutral-400">
+            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-neutral-400 dark:text-neutral-500">
               Stage
             </label>
             <div className="flex flex-wrap gap-2">
@@ -246,7 +246,7 @@ function NewLeadModal({ defaultStage, onClose, onCreate }) {
                   key={s.key}
                   type="button"
                   onClick={() => setStage(s.key)}
-                  className={`rounded-full px-3 py-1.5 text-xs font-medium ${stage === s.key ? "bg-neutral-900 text-white" : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"}`}
+                  className={`rounded-full px-3 py-1.5 text-xs font-medium ${stage === s.key ? "bg-neutral-900 dark:bg-emerald-600 text-white" : "bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700"}`}
                 >
                   {s.label}
                 </button>
@@ -259,7 +259,7 @@ function NewLeadModal({ defaultStage, onClose, onCreate }) {
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl px-4 py-2 text-sm font-medium text-neutral-500 hover:bg-neutral-100"
+            className="rounded-xl px-4 py-2 text-sm font-medium text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800"
           >
             Cancel
           </button>
@@ -267,7 +267,7 @@ function NewLeadModal({ defaultStage, onClose, onCreate }) {
             type="button"
             onClick={handleSave}
             disabled={!name.trim()}
-            className="rounded-xl bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded-xl bg-neutral-900 dark:bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 dark:hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-40"
           >
             Save lead
           </button>
@@ -302,7 +302,7 @@ export default function PipelinePage() {
   }
 
   return (
-    <div className="h-screen w-full overflow-x-auto bg-neutral-100 font-sans text-neutral-900">
+    <div className="h-screen w-full overflow-x-auto bg-neutral-100 font-sans text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
       <div style={{ minWidth: "1200px" }} className="flex h-full">
         <Sidebar />
         <div className="flex flex-1 flex-col overflow-hidden">
@@ -310,17 +310,17 @@ export default function PipelinePage() {
           <div className="flex-1 overflow-x-auto overflow-y-hidden p-8">
             <div className="mb-6 flex items-center justify-between">
               <div>
-                <h1 className="text-lg font-semibold text-neutral-900">
+                <h1 className="text-lg font-semibold text-neutral-900 dark:text-neutral-50">
                   Pipeline
                 </h1>
-                <p className="mt-1 text-sm text-neutral-400">
+                <p className="mt-1 text-sm text-neutral-400 dark:text-neutral-500">
                   Drag leads across stages as deals move forward.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setShowModal(true)}
-                className="flex items-center gap-1.5 rounded-xl bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800"
+                className="flex items-center gap-1.5 rounded-xl bg-neutral-900 dark:bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 dark:hover:bg-emerald-500"
               >
                 <Plus className="h-4 w-4" />
                 New lead
@@ -341,15 +341,15 @@ export default function PipelinePage() {
                     onDrop={(e) => handleDrop(e, stage.key)}
                     className={`flex w-64 shrink-0 flex-col rounded-2xl border p-3 ${
                       dragOverStage === stage.key
-                        ? "border-emerald-400 bg-emerald-50"
-                        : "border-neutral-200 bg-neutral-100"
+                        ? "border-emerald-400 bg-emerald-50 dark:bg-emerald-500/10"
+                        : "border-neutral-200 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800"
                     }`}
                   >
                     <div className="mb-3 flex items-center justify-between px-1">
-                      <span className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                      <span className="text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
                         {stage.label}
                       </span>
-                      <span className="text-xs text-neutral-400">
+                      <span className="text-xs text-neutral-400 dark:text-neutral-500">
                         {stageLeads.length}
                       </span>
                     </div>

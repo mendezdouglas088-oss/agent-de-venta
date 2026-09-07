@@ -22,21 +22,21 @@ export function CreateProductModal({ onClose, onCreate }) {
       name: name.trim(),
       price: price.trim(),
       imageUrl,
-      color: "bg-neutral-100",
+      color: "bg-neutral-100 dark:bg-neutral-800",
     });
   }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/40 p-4">
-      <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
+      <div className="w-full max-w-sm rounded-2xl bg-white dark:bg-neutral-900 p-6 shadow-2xl">
         <div className="mb-5 flex items-start justify-between">
-          <h2 className="text-base font-semibold text-neutral-900">
+          <h2 className="text-base font-semibold text-neutral-900 dark:text-neutral-50">
             New product
           </h2>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600"
+            className="rounded-lg p-1.5 text-neutral-400 dark:text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-600 dark:hover:text-neutral-300"
           >
             <X className="h-4 w-4" />
           </button>
@@ -46,7 +46,7 @@ export function CreateProductModal({ onClose, onCreate }) {
           <button
             type="button"
             onClick={() => fileInputRef.current && fileInputRef.current.click()}
-            className="flex h-36 w-full items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-neutral-200 hover:border-neutral-400"
+            className="flex h-36 w-full items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-neutral-200 dark:border-neutral-700 hover:border-neutral-400 dark:hover:border-neutral-500"
           >
             {imageUrl ? (
               <img
@@ -55,7 +55,7 @@ export function CreateProductModal({ onClose, onCreate }) {
                 className="h-full w-full object-cover"
               />
             ) : (
-              <div className="flex flex-col items-center gap-1.5 text-neutral-400">
+              <div className="flex flex-col items-center gap-1.5 text-neutral-400 dark:text-neutral-500">
                 <Upload className="h-5 w-5" />
                 <span className="text-xs">Upload image</span>
               </div>
@@ -70,26 +70,26 @@ export function CreateProductModal({ onClose, onCreate }) {
           />
 
           <div>
-            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-neutral-400">
+            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-neutral-400 dark:text-neutral-500">
               Name
             </label>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Wireless Headset"
-              className="w-full rounded-xl border border-neutral-200 px-3 py-2 text-sm text-neutral-700 placeholder-neutral-400 outline-none focus:border-neutral-400"
+              className="w-full rounded-xl border border-neutral-200 dark:border-neutral-700 px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-500 outline-none focus:border-neutral-400 dark:focus:border-neutral-500"
             />
           </div>
 
           <div>
-            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-neutral-400">
+            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-neutral-400 dark:text-neutral-500">
               Price (optional)
             </label>
             <input
               value={price}
               onChange={(e) => setPrice(e.target.value)}
               placeholder="$0.00"
-              className="w-full rounded-xl border border-neutral-200 px-3 py-2 text-sm text-neutral-700 placeholder-neutral-400 outline-none focus:border-neutral-400"
+              className="w-full rounded-xl border border-neutral-200 dark:border-neutral-700 px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-500 outline-none focus:border-neutral-400 dark:focus:border-neutral-500"
             />
           </div>
         </div>
@@ -98,7 +98,7 @@ export function CreateProductModal({ onClose, onCreate }) {
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl px-4 py-2 text-sm font-medium text-neutral-500 hover:bg-neutral-100"
+            className="rounded-xl px-4 py-2 text-sm font-medium text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800"
           >
             Cancel
           </button>
@@ -106,7 +106,7 @@ export function CreateProductModal({ onClose, onCreate }) {
             type="button"
             onClick={handleSave}
             disabled={!name.trim()}
-            className="rounded-xl bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded-xl bg-neutral-900 dark:bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 dark:hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-40"
           >
             Save product
           </button>

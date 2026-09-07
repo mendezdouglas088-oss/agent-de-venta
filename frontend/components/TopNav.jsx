@@ -13,7 +13,7 @@ export default function TopNav() {
   const pathname = usePathname();
 
   return (
-    <div className="flex h-14 shrink-0 items-center justify-end gap-3 border-b border-neutral-200 bg-white px-6 dark:border-neutral-700 dark:bg-neutral-900">
+    <div className="flex h-14 shrink-0 items-center justify-end gap-3 border-b border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-6">
       <ThemeToggle />
       <div className="relative">
         <RailIcon

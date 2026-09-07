@@ -92,27 +92,27 @@ function NotificationRow({ notification, onClick }) {
       onClick={onClick}
       className={`flex w-full items-start gap-3 rounded-2xl border p-4 text-left ${
         notification.read
-          ? "border-neutral-200 bg-white"
-          : "border-emerald-200 bg-emerald-50/40"
+          ? "border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900"
+          : "border-emerald-200 dark:border-emerald-800 bg-emerald-50/40 dark:bg-emerald-500/10"
       }`}
     >
       <span
-        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-${meta.color}-50 text-${meta.color}-600`}
+        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-${meta.color}-50 text-${meta.color}-600 dark:bg-${meta.color}-500/10 dark:text-${meta.color}-400`}
       >
         <Icon className="h-4 w-4" />
       </span>
       <div className="min-w-0 flex-1">
         <div className="flex items-center justify-between gap-2">
           <p
-            className={`text-sm ${notification.read ? "font-medium text-neutral-700" : "font-semibold text-neutral-900"}`}
+            className={`text-sm ${notification.read ? "font-medium text-neutral-700 dark:text-neutral-200" : "font-semibold text-neutral-900 dark:text-neutral-50"}`}
           >
             {notification.title}
           </p>
-          <span className="shrink-0 text-xs text-neutral-400">
+          <span className="shrink-0 text-xs text-neutral-400 dark:text-neutral-500">
             {notification.time}
           </span>
         </div>
-        <p className="mt-0.5 text-xs text-neutral-500">
+        <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
           {notification.description}
         </p>
       </div>
@@ -145,7 +145,7 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="h-screen w-full overflow-x-auto bg-neutral-100 font-sans text-neutral-900">
+    <div className="h-screen w-full overflow-x-auto bg-neutral-100 font-sans text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
       <div style={{ minWidth: "1200px" }} className="flex h-full">
         <Sidebar />
         <div className="flex flex-1 flex-col overflow-hidden">
@@ -153,17 +153,17 @@ export default function NotificationsPage() {
           <div className="flex-1 overflow-y-auto p-8">
             <div className="mb-6 flex items-center justify-between">
               <div>
-                <h1 className="text-lg font-semibold text-neutral-900">
+                <h1 className="text-lg font-semibold text-neutral-900 dark:text-neutral-50">
                   Notifications
                 </h1>
-                <p className="mt-1 text-sm text-neutral-400">
+                <p className="mt-1 text-sm text-neutral-400 dark:text-neutral-500">
                   {unreadCount} unread
                 </p>
               </div>
               <button
                 type="button"
                 onClick={markAllAsRead}
-                className="flex items-center gap-1.5 rounded-xl border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-50"
+                className="flex items-center gap-1.5 rounded-xl border border-neutral-200 dark:border-neutral-700 px-4 py-2 text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800"
               >
                 <Check className="h-4 w-4" />
                 Mark all as read
@@ -178,8 +178,8 @@ export default function NotificationsPage() {
                   onClick={() => setActiveFilter(f.key)}
                   className={`rounded-full px-3 py-1.5 text-xs font-medium ${
                     activeFilter === f.key
-                      ? "bg-neutral-900 text-white"
-                      : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                      ? "bg-neutral-900 dark:bg-emerald-600 text-white"
+                      : "bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700"
                   }`}
                 >
                   {f.label}
@@ -196,7 +196,7 @@ export default function NotificationsPage() {
                 />
               ))}
               {visible.length === 0 && (
-                <p className="text-sm text-neutral-400">Nothing here yet.</p>
+                <p className="text-sm text-neutral-400 dark:text-neutral-500">Nothing here yet.</p>
               )}
             </div>
           </div>

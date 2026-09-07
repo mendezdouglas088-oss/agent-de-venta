@@ -143,44 +143,44 @@ export function ChatView({
   }
 
   return (
-    <div className="flex h-full flex-1 flex-col bg-neutral-50">
+    <div className="flex h-full flex-1 flex-col bg-neutral-50 dark:bg-neutral-950">
       {openMenuId && (
         <div
           className="fixed inset-0 z-10"
           onClick={() => setOpenMenuId(null)}
         />
       )}
-      <div className="flex items-center justify-between border-b border-neutral-200 bg-white px-6 py-4">
+      <div className="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-6 py-4">
         <div className="flex items-center gap-3">
           <MessageSquareText />
         </div>
       </div>
 
-      <div className="flex items-center justify-between border-b border-neutral-200 bg-white px-6 py-1">
+      <div className="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-6 py-1">
         <div className="flex items-center gap-1.5">
           <button
             type="button"
-            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-neutral-500 hover:bg-neutral-100"
+            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800"
           >
             <CheckCircle2 className="h-3.5 w-3.5" />
             Move to Closed
           </button>
           <button
             type="button"
-            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-neutral-500 hover:bg-neutral-100"
+            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800"
           >
             Not assigned
           </button>
           <button
             type="button"
-            className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600"
+            className="rounded-lg p-1.5 text-neutral-400 dark:text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-600 dark:hover:text-neutral-300"
           >
             <UserPlus className="h-4 w-4" />
           </button>
           <button
             type="button"
             onClick={() => setBookmarked((v) => !v)}
-            className={`rounded-lg p-1.5 ${bookmarked ? "text-emerald-500" : "text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600"}`}
+            className={`rounded-lg p-1.5 ${bookmarked ? "text-emerald-500" : "text-neutral-400 dark:text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-600 dark:hover:text-neutral-300"}`}
           >
             <Bookmark
               className="h-4 w-4"
@@ -192,7 +192,7 @@ export function ChatView({
 
       <div className="flex-1 space-y-1 overflow-y-auto px-6 py-6">
         {messages.length === 0 && (
-          <div className="flex h-full flex-col items-center justify-center text-center text-neutral-300">
+          <div className="flex h-full flex-col items-center justify-center text-center text-neutral-300 dark:text-neutral-600">
             <Inbox className="mb-2 h-8 w-8" />
             <p className="text-sm">
               No sample messages for this contact in the demo.
@@ -202,7 +202,7 @@ export function ChatView({
         {messageGroups.map((group) => (
           <div key={`${group.label}-${group.items[0].id}`}>
             <div className="sticky top-0 z-10 mb-3 flex justify-center py-1">
-              <span className="rounded-full bg-neutral-200/90 px-3 py-1 text-xs font-medium text-neutral-500 shadow-sm backdrop-blur-sm">
+              <span className="rounded-full bg-neutral-200/90 dark:bg-neutral-700/90 px-3 py-1 text-xs font-medium text-neutral-500 dark:text-neutral-400 shadow-sm backdrop-blur-sm">
                 {group.label}
               </span>
             </div>
@@ -211,13 +211,13 @@ export function ChatView({
                 m.side === "in" ? (
                   <div key={m.id} className="flex justify-start">
                     <div className="max-w-md">
-                      <div className="mb-1 flex items-center justify-start gap-2 text-xs text-neutral-400">
-                        <span className="font-medium text-neutral-600">
+                      <div className="mb-1 flex items-center justify-start gap-2 text-xs text-neutral-400 dark:text-neutral-500">
+                        <span className="font-medium text-neutral-600 dark:text-neutral-300">
                           {m.from}
                         </span>
                         <span>{m.time}</span>
                       </div>
-                      <div className="rounded-2xl rounded-tl-sm bg-white  px-4 py-3 text-sm text-neutral-700 shadow-sm">
+                      <div className="rounded-2xl rounded-tl-sm bg-white dark:bg-neutral-900  px-4 py-3 text-sm text-neutral-700 dark:text-neutral-200 shadow-sm">
                         {m.text}
                         <MediaAttachment
                           type={m.type}
@@ -227,7 +227,7 @@ export function ChatView({
                           caption={m.text}
                         />
                       </div>
-                      <p className="mt-1 text-right text-xs text-neutral-300">
+                      <p className="mt-1 text-right text-xs text-neutral-300 dark:text-neutral-600">
                         {m.meta}
                       </p>
                     </div>
@@ -237,7 +237,7 @@ export function ChatView({
                         onClick={() =>
                           setOpenMenuId((id) => (id === m.id ? null : m.id))
                         }
-                        className="flex h-6 w-6 items-center justify-center rounded-full text-neutral-400 hover:bg-neutral-200 hover:text-neutral-600"
+                        className="flex h-6 w-6 items-center justify-center rounded-full text-neutral-400 dark:text-neutral-500 hover:bg-neutral-200 dark:hover:bg-neutral-700 hover:text-neutral-600 dark:hover:text-neutral-300"
                       >
                         <Ellipsis className="h-4 w-4" />
                       </button>
@@ -265,7 +265,7 @@ export function ChatView({
                         onClick={() =>
                           setOpenMenuId((id) => (id === m.id ? null : m.id))
                         }
-                        className="flex h-6 w-6 items-center justify-center rounded-full text-neutral-400 hover:bg-neutral-200 hover:text-neutral-600"
+                        className="flex h-6 w-6 items-center justify-center rounded-full text-neutral-400 dark:text-neutral-500 hover:bg-neutral-200 dark:hover:bg-neutral-700 hover:text-neutral-600 dark:hover:text-neutral-300"
                       >
                         <Ellipsis className="h-4 w-4" />
                       </button>
@@ -285,10 +285,10 @@ export function ChatView({
                       )}
                     </div>
                     <div className="max-w-md">
-                      <p className="mb-1 text-right text-xs font-medium text-neutral-500">
+                      <p className="mb-1 text-right text-xs font-medium text-neutral-500 dark:text-neutral-400">
                         {m.from}
                       </p>
-                      <div className="rounded-2xl rounded-br-sm border border-neutral-200  border-emerald-200 bg-emerald-100 px-4 py-3 text-sm text-neutral-700 ">
+                      <div className="rounded-2xl rounded-br-sm border border-neutral-200 dark:border-neutral-700  border-emerald-200 dark:border-emerald-800 bg-emerald-100 dark:bg-emerald-500/15 px-4 py-3 text-sm text-neutral-700 dark:text-neutral-200 ">
                         <p>{m.text}</p>
                         <MediaAttachment
                           type={m.type}
@@ -300,7 +300,7 @@ export function ChatView({
                         {m.link && (
                           <a
                             href={m.link}
-                            className="mt-2 flex items-center gap-1.5 text-xs text-sky-600 hover:underline"
+                            className="mt-2 flex items-center gap-1.5 text-xs text-sky-600 dark:text-sky-400 hover:underline"
                           >
                             <ExternalLink className="h-3 w-3" />
                             {m.link}
@@ -311,7 +311,7 @@ export function ChatView({
                             {m.attachments.map((a) => (
                               <span
                                 key={a}
-                                className="flex items-center gap-1.5 rounded-lg bg-neutral-100 px-2.5 py-1 text-xs text-neutral-600"
+                                className="flex items-center gap-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 px-2.5 py-1 text-xs text-neutral-600 dark:text-neutral-300"
                               >
                                 <Paperclip className="h-3 w-3" />
                                 {a}
@@ -320,7 +320,7 @@ export function ChatView({
                           </div>
                         )}
                       </div>
-                      <p className="mt-1 flex items-center gap-1 text-xs text-neutral-300">
+                      <p className="mt-1 flex items-center gap-1 text-xs text-neutral-300 dark:text-neutral-600">
                         <Check className="h-3 w-3 text-emerald-500" />
                         {m.meta}
                       </p>
@@ -333,7 +333,7 @@ export function ChatView({
         ))}
         {isTyping && (
           <div className="flex justify-start">
-            <div className="rounded-2xl rounded-tl-sm bg-white px-4 py-3 text-sm text-neutral-400 shadow-sm">
+            <div className="rounded-2xl rounded-tl-sm bg-white dark:bg-neutral-900 px-4 py-3 text-sm text-neutral-400 dark:text-neutral-500 shadow-sm">
               escribiendo…
             </div>
           </div>
@@ -341,12 +341,12 @@ export function ChatView({
         <div ref={bottomRef} />
       </div>
 
-      <div className="border-t border-neutral-200 bg-white px-6 py-4">
+      <div className="border-t border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-6 py-4">
         <div className="flex items-center gap-3">
-          <div className="flex flex-1 items-center gap-2 rounded-2xl bg-neutral-100 px-4 py-2.5">
+          <div className="flex flex-1 items-center gap-2 rounded-2xl bg-neutral-100 dark:bg-neutral-800 px-4 py-2.5">
             <button
               type="button"
-              className="text-neutral-400 hover:text-neutral-600"
+              className="text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300"
             >
               <Plus className="h-4 w-4" />
             </button>
@@ -361,23 +361,23 @@ export function ChatView({
                 }
               }}
               placeholder="Type your message..."
-              className="flex-1 bg-transparent text-sm text-neutral-700 placeholder-neutral-400 outline-none"
+              className="flex-1 bg-transparent text-sm text-neutral-700 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-500 outline-none"
             />
             <button
               type="button"
-              className="text-neutral-400 hover:text-neutral-600"
+              className="text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300"
             >
               <Smile className="h-4 w-4" />
             </button>
             <button
               type="button"
-              className="text-neutral-400 hover:text-neutral-600"
+              className="text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300"
             >
               <Mic className="h-4 w-4" />
             </button>
             <button
               type="button"
-              className="text-neutral-400 hover:text-neutral-600"
+              className="text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300"
             >
               <Paperclip className="h-4 w-4" />
             </button>
@@ -385,7 +385,7 @@ export function ChatView({
           <button
             type="button"
             title="AI Assistant"
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-sky-100 text-sky-500 hover:bg-sky-200"
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-sky-100 dark:bg-sky-500/15 text-sky-500 hover:bg-sky-200 dark:hover:bg-sky-500/20"
           >
             <Bot className="h-5 w-5" />
           </button>
@@ -393,7 +393,7 @@ export function ChatView({
             type="button"
             onClick={handleSendMessage}
             title="Send message"
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-neutral-900 text-white hover:bg-neutral-800"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-neutral-900 dark:bg-emerald-600 text-white hover:bg-neutral-800 dark:hover:bg-emerald-500"
           >
             <Send className="h-4 w-4" />
           </button>

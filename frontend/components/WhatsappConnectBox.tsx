@@ -45,11 +45,11 @@ export function WhatsappConnectBox({ connectionId, onConnected }) {
   }, [status, onConnected]);
 
   return (
-    <div className="mx-auto flex h-48 w-48 flex-col items-center justify-center gap-2 rounded-xl border border-neutral-200 bg-neutral-50 p-3 text-center">
+    <div className="mx-auto flex h-48 w-48 flex-col items-center justify-center gap-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-950 p-3 text-center">
       {status === "connected" ? (
         <>
           <CheckCircle2 className="h-10 w-10 text-emerald-500" />
-          <p className="text-sm font-medium text-neutral-700">Conectado</p>
+          <p className="text-sm font-medium text-neutral-700 dark:text-neutral-200">Conectado</p>
         </>
       ) : qrUrl ? (
         <img
@@ -60,14 +60,14 @@ export function WhatsappConnectBox({ connectionId, onConnected }) {
       ) : isFailed ? (
         <>
           <AlertTriangle className="h-10 w-10 text-rose-500" />
-          <p className="text-sm text-neutral-600">
+          <p className="text-sm text-neutral-600 dark:text-neutral-300">
             No se pudo conectar. Cerrá y volvé a intentar.
           </p>
         </>
       ) : (
         <>
-          <Loader2 className="h-10 w-10 animate-spin text-neutral-400" />
-          <p className="text-sm text-neutral-500">Conectando...</p>
+          <Loader2 className="h-10 w-10 animate-spin text-neutral-400 dark:text-neutral-500" />
+          <p className="text-sm text-neutral-500 dark:text-neutral-400">Conectando...</p>
         </>
       )}
     </div>

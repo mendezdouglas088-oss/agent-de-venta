@@ -45,7 +45,7 @@ export default function Sidebar({ onOpenProducts }) {
   }
 
   return (
-    <div className="flex h-full w-16 flex-col items-center justify-between border-r border-neutral-200 bg-white py-4">
+    <div className="flex h-full w-16 flex-col items-center justify-between border-r border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 py-4">
       <div className="flex flex-col items-center gap-3">
         <RailIcon icon={BotMessageSquare} tone="brand" label="Hola !!!" />
         {NAV_ITEMS.map((item) => (

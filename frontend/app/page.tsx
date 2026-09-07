@@ -99,19 +99,19 @@ const ACTIVE_AUTOMATIONS = [
 
 function MetricCard({ metric }) {
   return (
-    <div className="rounded-2xl border border-neutral-200 bg-white p-5">
+    <div className="rounded-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-5">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium uppercase tracking-wide text-neutral-400">
+        <span className="text-xs font-medium uppercase tracking-wide text-neutral-400 dark:text-neutral-500">
           {metric.label}
         </span>
-        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
+        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
           <metric.icon className="h-4 w-4" />
         </span>
       </div>
-      <p className="mt-3 text-2xl font-semibold text-neutral-900">
+      <p className="mt-3 text-2xl font-semibold text-neutral-900 dark:text-neutral-50">
         {metric.value}
       </p>
-      <p className="mt-1 text-xs text-neutral-400">{metric.trend}</p>
+      <p className="mt-1 text-xs text-neutral-400 dark:text-neutral-500">{metric.trend}</p>
     </div>
   );
 }
@@ -119,23 +119,23 @@ function MetricCard({ metric }) {
 function PipelineOverviewCard() {
   const max = Math.max(...STAGE_BREAKDOWN.map((s) => s.count));
   return (
-    <div className="rounded-2xl border border-neutral-200 bg-white p-5">
-      <h2 className="text-sm font-semibold text-neutral-900">
+    <div className="rounded-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-5">
+      <h2 className="text-sm font-semibold text-neutral-900 dark:text-neutral-50">
         Pipeline overview
       </h2>
       <div className="mt-4 space-y-3">
         {STAGE_BREAKDOWN.map((s) => (
           <div key={s.label} className="flex items-center gap-3">
-            <span className="w-24 shrink-0 text-xs text-neutral-500">
+            <span className="w-24 shrink-0 text-xs text-neutral-500 dark:text-neutral-400">
               {s.label}
             </span>
-            <div className="h-2 flex-1 overflow-hidden rounded-full bg-neutral-100">
+            <div className="h-2 flex-1 overflow-hidden rounded-full bg-neutral-100 dark:bg-neutral-800">
               <div
                 className="h-full rounded-full bg-emerald-500"
                 style={{ width: `${(s.count / max) * 100}%` }}
               />
             </div>
-            <span className="w-4 shrink-0 text-right text-xs font-medium text-neutral-700">
+            <span className="w-4 shrink-0 text-right text-xs font-medium text-neutral-700 dark:text-neutral-200">
               {s.count}
             </span>
           </div>
@@ -148,8 +148,8 @@ function PipelineOverviewCard() {
 function ChannelMessagesCard() {
   const max = Math.max(...CHANNEL_MESSAGES.map((c) => c.count));
   return (
-    <div className="rounded-2xl border border-neutral-200 bg-white p-5">
-      <h2 className="text-sm font-semibold text-neutral-900">
+    <div className="rounded-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-5">
+      <h2 className="text-sm font-semibold text-neutral-900 dark:text-neutral-50">
         Messages by channel
       </h2>
       <div className="mt-4 space-y-3">
@@ -162,16 +162,16 @@ function ChannelMessagesCard() {
               >
                 <Icon className="h-3 w-3 text-white" />
               </span>
-              <span className="w-16 shrink-0 text-xs text-neutral-500">
+              <span className="w-16 shrink-0 text-xs text-neutral-500 dark:text-neutral-400">
                 {c.label}
               </span>
-              <div className="h-2 flex-1 overflow-hidden rounded-full bg-neutral-100">
+              <div className="h-2 flex-1 overflow-hidden rounded-full bg-neutral-100 dark:bg-neutral-800">
                 <div
                   className={`h-full rounded-full ${c.channel === "telegram" ? "bg-sky-500" : "bg-emerald-500"}`}
                   style={{ width: `${(c.count / max) * 100}%` }}
                 />
               </div>
-              <span className="w-8 shrink-0 text-right text-xs font-medium text-neutral-700">
+              <span className="w-8 shrink-0 text-right text-xs font-medium text-neutral-700 dark:text-neutral-200">
                 {c.count}
               </span>
             </div>
@@ -184,8 +184,8 @@ function ChannelMessagesCard() {
 
 function RecentActivityCard({ router }) {
   return (
-    <div className="rounded-2xl border border-neutral-200 bg-white p-5">
-      <h2 className="text-sm font-semibold text-neutral-900">
+    <div className="rounded-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-5">
+      <h2 className="text-sm font-semibold text-neutral-900 dark:text-neutral-50">
         Recent activity
       </h2>
       <div className="mt-4 space-y-1">
@@ -194,19 +194,19 @@ function RecentActivityCard({ router }) {
             key={a.name}
             type="button"
             onClick={() => router.push("/inbox")}
-            className="flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left hover:bg-neutral-50"
+            className="flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left hover:bg-neutral-50 dark:hover:bg-neutral-800"
           >
             <Avatar name={a.name} size="h-8 w-8" />
             <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between">
-                <span className="truncate text-sm font-medium text-neutral-800">
+                <span className="truncate text-sm font-medium text-neutral-800 dark:text-neutral-200">
                   {a.name}
                 </span>
-                <span className="shrink-0 text-xs text-neutral-400">
+                <span className="shrink-0 text-xs text-neutral-400 dark:text-neutral-500">
                   {a.time}
                 </span>
               </div>
-              <span className="truncate text-xs text-neutral-400">
+              <span className="truncate text-xs text-neutral-400 dark:text-neutral-500">
                 {a.snippet}
               </span>
             </div>
@@ -219,8 +219,8 @@ function RecentActivityCard({ router }) {
 
 function ActiveAutomationsCard({ router }) {
   return (
-    <div className="rounded-2xl border border-neutral-200 bg-white p-5">
-      <h2 className="text-sm font-semibold text-neutral-900">
+    <div className="rounded-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-5">
+      <h2 className="text-sm font-semibold text-neutral-900 dark:text-neutral-50">
         Active automations
       </h2>
       <div className="mt-4 space-y-1">
@@ -229,11 +229,11 @@ function ActiveAutomationsCard({ router }) {
             key={a.name}
             type="button"
             onClick={() => router.push("/automation")}
-            className="flex w-full items-center justify-between rounded-xl px-2 py-2 text-left hover:bg-neutral-50"
+            className="flex w-full items-center justify-between rounded-xl px-2 py-2 text-left hover:bg-neutral-50 dark:hover:bg-neutral-800"
           >
             <div>
-              <p className="text-sm font-medium text-neutral-800">{a.name}</p>
-              <p className="text-xs text-neutral-400">{a.type}</p>
+              <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">{a.name}</p>
+              <p className="text-xs text-neutral-400 dark:text-neutral-500">{a.type}</p>
             </div>
             <span className="h-2 w-2 rounded-full bg-emerald-500" />
           </button>
@@ -247,17 +247,17 @@ export default function DashboardPage() {
   const router = useRouter();
 
   return (
-    <div className="h-screen w-full overflow-x-auto bg-neutral-100 font-sans text-neutral-900">
+    <div className="h-screen w-full overflow-x-auto bg-neutral-100 font-sans text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
       <div style={{ minWidth: "1200px" }} className="flex h-full">
         <Sidebar />
         <div className="flex flex-1 flex-col overflow-hidden">
           <TopNav />
           <div className="flex-1 overflow-y-auto p-8">
             <div className="mb-6">
-              <h1 className="text-lg font-semibold text-neutral-900">
+              <h1 className="text-lg font-semibold text-neutral-900 dark:text-neutral-50">
                 Dashboard
               </h1>
-              <p className="mt-1 text-sm text-neutral-400">
+              <p className="mt-1 text-sm text-neutral-400 dark:text-neutral-500">
                 A quick overview of your conversations, pipeline, and
                 automations.
               </p>

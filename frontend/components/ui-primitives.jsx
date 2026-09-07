@@ -41,10 +41,10 @@ export function RailIcon({
 }) {
   const toneClasses =
     tone === "brand"
-      ? "bg-emerald-500 text-white hover:bg-emerald-600"
+      ? "bg-emerald-500 text-white hover:bg-emerald-600 dark:hover:bg-emerald-400"
       : active
-        ? "bg-neutral-900 text-white"
-        : "text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600";
+        ? "bg-neutral-900 dark:bg-emerald-600 text-white"
+        : "text-neutral-400 dark:text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-600 dark:hover:text-neutral-300";
   return (
     <button
       type="button"
