@@ -57,8 +57,7 @@ export class WhatsappGroupService {
 
       return await this.repoWhatsappGroup.find({
         where: {
-          whatsappConnectionId: connectionId,
-          whatsappConnection: { userId },
+          whatsappConnection: { connectionId, userId },
         },
       });
     } catch (error) {

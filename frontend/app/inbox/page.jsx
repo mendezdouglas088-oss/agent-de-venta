@@ -38,6 +38,8 @@ const INITIAL_PRODUCTS = [
   },
 ];
 
+const NO_CHAT = "__none__";
+
 export default function CRMInboxDashboard() {
   const [activeChatId, setActiveChatId] = useState(null);
   const [activeFilter, setActiveFilter] = useState("all");
@@ -257,11 +259,27 @@ export default function CRMInboxDashboard() {
   const unreadTotal = chats.reduce((sum, c) => sum + (c.unread || 0), 0);
   const newCount = chats.filter((c) => c.isNew).length;
 
-  const activeChat = listItems.find((c) => c.id === activeChatId) ||
-    listItems[0] || { name: "" };
+  // Busca primero en la lista completa de chats (no en listItems, que en el
+  // filtro "New" se va vaciando a medida que cada chat deja de ser nuevo) para
+  // que el panel derecho no pierda la conversación seleccionada.
+  const activeChat =
+    activeChatId === NO_CHAT
+      ? { name: "" }
+      : chats.find((c) => c.id === activeChatId) ||
+        listItems.find((c) => c.id === activeChatId) ||
+        listItems[0] || { name: "" };
   const effectiveChatId =
-    activeChatId ??
-    (activeFilter === "new" ? null : listItems[0] ? listItems[0].id : null);
+    activeChatId === NO_CHAT
+      ? null
+      : (activeChatId ??
+        // En "New" no autoseleccionamos: si no hay elección explícita, no se
+        // abre nada solo, evitando el loop de "abrir -> marcar visto -> el
+        // siguiente pasa a ser el primero -> se abre solo -> ...".
+        (activeFilter === "new"
+          ? null
+          : listItems[0]
+            ? listItems[0].id
+            : null));
   const effectiveChatIdRef = useRef(effectiveChatId);
   useEffect(() => {
     effectiveChatIdRef.current = effectiveChatId;
@@ -497,6 +515,35 @@ export default function CRMInboxDashboard() {
   useEffect(() => {
     clearPendingAttention(); // apaga el parpadeo del ícono al entrar a Inbox
   }, []);
+
+  useEffect(() => {
+    const anyModalOpen =
+      showPostModal ||
+      showProductModal ||
+      showLibrary ||
+      showConnectionModal ||
+      showSelectUserModal ||
+      showAddUserModal ||
+      showWhatsAppQR ||
+      showTelegramForm;
+
+    function handleEscape(e) {
+      if (e.key === "Escape" && !anyModalOpen) {
+        setActiveChatId(NO_CHAT);
+      }
+    }
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [
+    showPostModal,
+    showProductModal,
+    showLibrary,
+    showConnectionModal,
+    showSelectUserModal,
+    showAddUserModal,
+    showWhatsAppQR,
+    showTelegramForm,
+  ]);
 
   function handleProductCreated(product) {
     setProducts((prev) => [...prev, product]);
