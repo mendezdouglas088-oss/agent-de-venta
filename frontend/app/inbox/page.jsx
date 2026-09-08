@@ -15,7 +15,6 @@ import { ProfileSidebar } from "@/components/inbox/ProfileSidebar";
 import { CreatePostModal } from "@/components/inbox/modals/CreatePostModal";
 import { CreateProductModal } from "@/components/inbox/modals/CreateProductModal";
 import { AddUserModal } from "@/components/inbox/modals/AddUserModal";
-import { ProductLibraryModal } from "@/components/inbox/modals/ProductLibraryModal";
 import { ConnectionTypeModal } from "@/components/inbox/modals/ConnectionTypeModal";
 import { SelectUserModal } from "@/components/inbox/modals/SelectUserModal";
 import { WhatsAppQRModal } from "@/components/inbox/modals/WhatsAppQRModal";
@@ -48,7 +47,6 @@ export default function CRMInboxDashboard() {
   const [products, setProducts] = useState(INITIAL_PRODUCTS);
   const [showPostModal, setShowPostModal] = useState(false);
   const [showProductModal, setShowProductModal] = useState(false);
-  const [showLibrary, setShowLibrary] = useState(false);
   const [toast, setToast] = useState("");
   const [showConnectionModal, setShowConnectionModal] = useState(false);
   const [showSelectUserModal, setShowSelectUserModal] = useState(false);
@@ -522,7 +520,6 @@ export default function CRMInboxDashboard() {
     const anyModalOpen =
       showPostModal ||
       showProductModal ||
-      showLibrary ||
       showConnectionModal ||
       showSelectUserModal ||
       showAddUserModal ||
@@ -539,7 +536,6 @@ export default function CRMInboxDashboard() {
   }, [
     showPostModal,
     showProductModal,
-    showLibrary,
     showConnectionModal,
     showSelectUserModal,
     showAddUserModal,
@@ -567,7 +563,7 @@ export default function CRMInboxDashboard() {
   return (
     <div className="h-screen w-full overflow-x-auto bg-neutral-100 font-sans text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
       <div style={{ minWidth: "1200px" }} className="flex h-full">
-        <Sidebar onOpenProducts={() => setShowLibrary(true)} />
+        <Sidebar />
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
           <TopNav />
           <div className="relative flex min-h-0 flex-1 overflow-hidden">
@@ -700,17 +696,6 @@ export default function CRMInboxDashboard() {
         <CreateProductModal
           onClose={() => setShowProductModal(false)}
           onCreate={handleProductCreated}
-        />
-      )}
-
-      {showLibrary && (
-        <ProductLibraryModal
-          products={products}
-          onClose={() => setShowLibrary(false)}
-          onAddProduct={() => {
-            setShowLibrary(false);
-            setShowProductModal(true);
-          }}
         />
       )}
 

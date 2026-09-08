@@ -58,7 +58,12 @@ export default function Sidebar({ onOpenProducts }) {
             pulse={item.path === "/inbox" && pendingAttention}
           />
         ))}
-        <RailIcon icon={Package} label="Products" onClick={onOpenProducts} />
+        <RailIcon
+          icon={Package}
+          label="Products"
+          active={pathname === "/products"}
+          onClick={() => router.push("/products")}
+        />
       </div>
 
       <div className="flex flex-col items-center gap-3">
