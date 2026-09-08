@@ -17,19 +17,21 @@ import {
   Clock,
   ThumbsUp,
   Trash2,
+  ClipboardClock,
   LogOut,
 } from "lucide-react";
 import { RailIcon } from "./ui-primitives";
 
 import { useSocket } from "@/contexts/SocketContext";
-import { apiFetch } from "@/lib/api";
 
 const NAV_ITEMS = [
   { icon: Home, label: "Dashboard", path: "/" },
-  { icon: Zap, label: "Automations", path: "/automation" },
   { icon: MessageSquare, label: "Inbox", path: "/inbox" },
-  { icon: Kanban, label: "Pipeline", path: "/pipeline" },
+  { icon: Zap, label: "Automations", path: "/automation" },
   { icon: CalendarDays, label: "Calendar", path: "/calendar" },
+  { icon: Kanban, label: "Pipeline", path: "/pipeline" },
+  { icon: Package, label: "Products", path: "/products" },
+  { icon: ClipboardClock, label: "Publications", path: "/publications" },
 ];
 
 export default function Sidebar({ onOpenProducts }) {
@@ -58,12 +60,6 @@ export default function Sidebar({ onOpenProducts }) {
             pulse={item.path === "/inbox" && pendingAttention}
           />
         ))}
-        <RailIcon
-          icon={Package}
-          label="Products"
-          active={pathname === "/products"}
-          onClick={() => router.push("/products")}
-        />
       </div>
 
       <div className="flex flex-col items-center gap-3">
